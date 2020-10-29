@@ -1,5 +1,5 @@
 gcloud compute \
---project "cs221-project-293411" \
+--project "" \
 instances create "thor" \
 --zone "europe-west1-d" \
 --machine-type "custom-10-61440" \
