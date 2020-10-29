@@ -1,2 +1,6 @@
-sudo gcsfuse --implicit-dirs --dir-mode "777"  \
--o allow_other -o nonempty gs://robot-license ./
+sudo git clone https://github.com/peterdavidfagan/CS221-Project.git
+sudo chmod -R a+rwx ./CS221-Project
+cd ./CS221-Project/docker/
+sudo gsutil cp -r gs://robot-license/mjkey.txt ./
+sudo sudo docker build -t robosuite .
+sudo docker run -it -d --gpus all --name robosuite robosuite:latest
