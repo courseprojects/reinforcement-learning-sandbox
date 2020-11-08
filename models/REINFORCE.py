@@ -14,7 +14,7 @@ import torch.optim as optim
 import torch.distributions as dist
 from torch.autograd import Variable
 
-pi = Variable(torch.FloatTensor([math.pi])) #.cuda()
+pi = Variable(torch.FloatTensor([math.pi])).to(device)
 
 def normal(x, mu, sigma_sq):
     a = (-1*(Variable(x)-mu).pow(2)/(2*sigma_sq)).exp()
