@@ -1,4 +1,5 @@
 import argparse, math, os
+import numpy as np
 import robosuite as suite
 import wandb
 
