@@ -70,6 +70,7 @@ for episode in range(args.num_episodes):
     rewards = []
     while done==False: 
         action, log_prob = agent.select_action(state)
+        action = action.to('cpu')
         obs, reward, done, info = env.step(action)
         log_probs.append(log_prob)
         rewards.append(reward)
