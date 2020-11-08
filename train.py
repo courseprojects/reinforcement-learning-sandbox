@@ -79,5 +79,5 @@ for episode in range(args.num_episodes):
     print('Episode: {}, Rewards: {}'.format(episode, np.sum(rewards)))
     wandb.log({'episode_reward': np.sum(rewards)})
 
-torch.save(agent.state_dict(),'./{}.pkl'.format(args.wandb_name))
+torch.save(agent.model.state_dict(),'./{}.pkl'.format(args.wandb_name))
 wandb.save('{}.pkl'.format(args.wandb_name))
