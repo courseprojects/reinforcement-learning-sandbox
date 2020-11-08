@@ -1,4 +1,5 @@
 import argparse, math, os
+import robosuite as suite
 import wandb
 
 import torch
