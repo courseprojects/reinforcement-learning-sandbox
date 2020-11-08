@@ -13,6 +13,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.distributions as dist
 from torch.autograd import Variable
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 pi = Variable(torch.FloatTensor([math.pi])).to(device)
 
