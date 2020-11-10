@@ -27,35 +27,39 @@ class REINFORCEPolicy(nn.Module):
     '''
     This class represent our policy parameterization.
     '''
-    def __init__(self, state_dim,action_dim):
+    def __init__(self, state_dim,action_dim,hidden_layer):
         super(REINFORCEPolicy, self).__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
+        self.hidden_layer = hidden_layer
         
-        self.l1 = nn.Linear(self.state_dim, 128, bias = False)
-        self.l2 = nn.Linear(128, self.action_dim*2, bias = False)
+        self.l1 = nn.Linear(self.state_dim, self.hidden_layer)
+        self.l2 = nn.Linear(self.hidden_layer, self.hidden_layer//2)
+        self.l3 = nn.Linear(self.hidden_layer//2, self.action_dim)
+        self.l3_ = nn.Linear(self.hidden_layer//2, self.action_dim)
+        self.d1 = nn.Dropout(0.5)
+        self.d2 = nn.Dropout(0.5)
 
     def forward(self,x):
-        model = nn.Sequential(
-            self.l1,
-            nn.Dropout(p=0.6),
-            nn.ReLU(),
-            self.l2,
-            nn.Softmax(dim=-1)
-         )
-        return model(x)
+        out = F.relu(self.d1(self.l1(x)))
+        out = F.relu(self.d2(self.l2(out)))
+        mu = self.l3(out)
+        sigma_sq = self.l3_(out)
+        return mu, sigma_sq
     
     
 class REINFORCE:
     '''
     This class encapsulates functionality required to run the REINFORCE algorithm.
     '''
-    def __init__(self, state_dim,action_dim, gamma, episodes, horizon):
+    def __init__(self, state_dim,action_dim, gamma, lr, episodes, horizon, hidden_layer):
         self.state_dim = state_dim
         self.action_dim = action_dim
-        self.model = REINFORCEPolicy(state_dim, action_dim)
+        self.hidden_layer = hidden_layer
+        self.lr = lr
+        self.model = REINFORCEPolicy(state_dim, action_dim,hidden_layer)
         self.model = self.model.to(device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr = 1e-3)
+        self.optimizer = optim.Adam(self.model.parameters(), lr = self.lr)
         self.model.train()
         
         self.gamma = gamma
@@ -66,15 +70,15 @@ class REINFORCE:
     def select_action(self, state):
         actions = []
         log_probs = []
-        outputs = self.model(Variable(state).to(device)) 
+        mu , sigma_sq = self.model(Variable(state).to(device)) 
         for i in range(self.action_dim):
-            mu = outputs[i]
-            sigma_sq = outputs[i+1]
-            sigma_sq = F.softplus(sigma_sq) # ensures that the estimate is always positive
+            mu_ = mu[i]
+            sigma_sq_ = sigma_sq[i]
+            sigma_sq_ = F.softplus(sigma_sq_) # ensures that the estimate is always positive
 
-            eps = torch.randn(mu.size())
-            action = (mu + sigma_sq.sqrt()*Variable(eps).to(device)).data
-            prob = normal(action, mu, sigma_sq)
+            eps = torch.randn(mu_.size())
+            action = (mu_ + sigma_sq_.sqrt()*Variable(eps).to(device)).data
+            prob = normal(action, mu_, sigma_sq_)
             log_prob = prob.log()
             actions.append(action)
             log_probs.append(log_prob)
