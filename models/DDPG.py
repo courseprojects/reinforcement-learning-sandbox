@@ -45,22 +45,59 @@ class DDPGCritic(nn.Module):
     	return x 
 
 
+class OUActionNoise(object):
+	'''ornstein uhlenbeck process, source: "https://github.com/philtabor/Youtube-Code-Repository/blob/master/ReinforcementLearning/PolicyGradient/DDPG/pytorch/lunar-lander/ddpg_torch.py" '''	
+    def __init__(self, mu, sigma=0.15, theta=.2, dt=1e-2, x0=None):
+        self.theta = theta
+        self.mu = mu
+        self.sigma = sigma
+        self.dt = dt
+        self.x0 = x0
+        self.reset()
+
+    def __call__(self):
+        x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + \
+            self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.mu.shape)
+        self.x_prev = x
+        return x
+
+    def reset(self):
+        self.x_prev = self.x0 if self.x0 is not None else np.zeros_like(self.mu)
+
+    def __repr__(self):
+        return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(
+                                                            self.mu, self.sigma)
+
+
 class DDPG:
 	'''This class represents our implementation of DDPG'''
 	def __init__(self, ):
-        self.actor_model = DDPGActor()
-        self.actor_model = self.actor_model.to(device)
-        self.critic_model = DDPGCritic()
-        self.critic_model = self.critic_model.to(device)
-        # Need to organize target models
+        self.actor = DDPGActor()
+        self.actor = self.actor.to(device)
+        self.actor_target = DDPGActor()
+        self.actor_target = self.actor_target.to(device)
+        self.actor_optim  = optim.Adam(self.actor.parameters(), lr = self.lr)
+
+
+        self.critic = DDPGCritic()
+        self.critic = self.critic.to(device)
+        self.critic_target = DDPGCritic()
+        self.critic_target = self.critic_target.to(device)
+        self.critic_optim  = optim.Adam(self.critic.parameters(), lr = self.lr)
+
         
         # Need to define replay buffer
         self.memory = 
 
         # Hyper parameters
+        self.tau = 
         self.batch_size = 
         self.lr = 
         self.gamma = 
+
+    def random_process(self):
+    	''''''
+
 
     def select_action(self, state):
 
