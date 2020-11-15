@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser(description='PyTorch robot arm training script'
 parser.add_argument('--env_name', type=str, default='Lift')
 parser.add_argument('--robot', type=str, default='Panda')
 parser.add_argument('--algo', type=str, default='REINFORCE')
-parser.add_argument('--hidden_layer', type=int, default=256)
+parser.add_argument('--hidden_size', type=int, default=256)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--gamma', type=float, default=0.99,
                     help='discount factor for reward (default: 0.99)')
@@ -63,7 +63,7 @@ state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
 
 # Setting algorithm according to args
 if args.algo=='REINFORCE':
-	agent = REINFORCE(state_dim,env.action_dim, args.gamma, args.lr, args.num_episodes, args.horizon, args.hidden_layer)
+	agent = REINFORCE(state_dim,env.action_dim, args.gamma, args.lr, args.num_episodes, args.horizon, args.hidden_size)
 else:
 	sys.exit('Incorrect algorithms specification. Please check the algorithm argument provided.')
 

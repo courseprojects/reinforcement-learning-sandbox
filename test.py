@@ -37,7 +37,7 @@ state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
 
 # Setting algorithm according to args
 if args.algo=='REINFORCE':
-	# agent = REINFORCE(state_dim,env.action_dim, args.gamma, args.lr, args.num_episodes, args.horizon, args.hidden_layer)
+	# agent = REINFORCE(state_dim,env.action_dim, args.gamma, args.lr, args.num_episodes, args.horizon, args.hidden_size)
 	agent.model.load_state_dict(torch.load(args.model_path)) # Change to load entire model
 
 else:

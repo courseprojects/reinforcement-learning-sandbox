@@ -25,18 +25,18 @@ def normal(x, mu, sigma_sq):
 
 class REINFORCEPolicy(nn.Module):
     '''
-    This class represent our policy parameterization.
+    This class represents our policy parameterization.
     '''
-    def __init__(self, state_dim,action_dim,hidden_layer):
+    def __init__(self, state_dim,action_dim,hidden_size):
         super(REINFORCEPolicy, self).__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
-        self.hidden_layer = hidden_layer
+        self.hidden_size = hidden_size
         
-        self.l1 = nn.Linear(self.state_dim, self.hidden_layer)
-        self.l2 = nn.Linear(self.hidden_layer, self.hidden_layer//2)
-        self.l3 = nn.Linear(self.hidden_layer//2, self.action_dim)
-        self.l3_ = nn.Linear(self.hidden_layer//2, self.action_dim)
+        self.l1 = nn.Linear(self.state_dim, self.hidden_size)
+        self.l2 = nn.Linear(self.hidden_size, self.hidden_size//2)
+        self.l3 = nn.Linear(self.hidden_size//2, self.action_dim)
+        self.l3_ = nn.Linear(self.hidden_size//2, self.action_dim)
         self.d1 = nn.Dropout(0.5)
         self.d2 = nn.Dropout(0.5)
 
@@ -52,12 +52,12 @@ class REINFORCE:
     '''
     This class encapsulates functionality required to run the REINFORCE algorithm.
     '''
-    def __init__(self, state_dim,action_dim, gamma, lr, episodes, horizon, hidden_layer):
+    def __init__(self, state_dim,action_dim, gamma, lr, episodes, horizon, hidden_size):
         self.state_dim = state_dim
         self.action_dim = action_dim
-        self.hidden_layer = hidden_layer
+        self.hidden_size = hidden_size
         self.lr = lr
-        self.model = REINFORCEPolicy(state_dim, action_dim,hidden_layer)
+        self.model = REINFORCEPolicy(state_dim, action_dim,hidden_size)
         self.model = self.model.to(device)
         self.optimizer = optim.Adam(self.model.parameters(), lr = self.lr)
         self.model.train()
