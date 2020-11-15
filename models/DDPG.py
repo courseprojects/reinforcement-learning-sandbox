@@ -12,6 +12,8 @@ import torch.distributions as dist
 from torch.autograd import Variable
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+from DDPG_utils import ReplayBuffer, OUNoise
+
 class DDPGActor(nn.Module):
 	'''This class represents our actor model'''
 	def __init__(self, state_dim, action_dim, hidden_size):
@@ -45,30 +47,6 @@ class DDPGCritic(nn.Module):
     	return x 
 
 
-class OUActionNoise(object):
-	'''ornstein uhlenbeck process, source: "https://github.com/philtabor/Youtube-Code-Repository/blob/master/ReinforcementLearning/PolicyGradient/DDPG/pytorch/lunar-lander/ddpg_torch.py" '''	
-    def __init__(self, mu, sigma=0.15, theta=.2, dt=1e-2, x0=None):
-        self.theta = theta
-        self.mu = mu
-        self.sigma = sigma
-        self.dt = dt
-        self.x0 = x0
-        self.reset()
-
-    def __call__(self):
-        x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + \
-            self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.mu.shape)
-        self.x_prev = x
-        return x
-
-    def reset(self):
-        self.x_prev = self.x0 if self.x0 is not None else np.zeros_like(self.mu)
-
-    def __repr__(self):
-        return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(
-                                                            self.mu, self.sigma)
-
-
 class DDPG:
 	'''This class represents our implementation of DDPG'''
 	def __init__(self, ):
@@ -78,22 +56,19 @@ class DDPG:
         self.actor_target = self.actor_target.to(device)
         self.actor_optim  = optim.Adam(self.actor.parameters(), lr = self.lr)
 
-
         self.critic = DDPGCritic()
         self.critic = self.critic.to(device)
         self.critic_target = DDPGCritic()
         self.critic_target = self.critic_target.to(device)
         self.critic_optim  = optim.Adam(self.critic.parameters(), lr = self.lr)
 
-        
-        # Need to define replay buffer
-        self.memory = 
+        self.max_mem_size
+        self.memory = ReplayBuffer(self.max_mem_size, self.state_dim, self.action_dim)
 
-        # Hyper parameters
-        self.tau = 
-        self.batch_size = 
-        self.lr = 
-        self.gamma = 
+        self.tau = tau
+        self.batch_size = batch_size
+        self.lr = lr
+        self.gamma = gamma 
 
     def random_process(self):
     	''''''

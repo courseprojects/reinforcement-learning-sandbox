@@ -64,28 +64,33 @@ state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
 # Setting algorithm according to args
 if args.algo=='REINFORCE':
 	agent = REINFORCE(state_dim,env.action_dim, args.gamma, args.lr, args.num_episodes, args.horizon, args.hidden_size)
+
+	# Begin the training process
+	for epoch in range(args.num_epochs):
+		log_probs = [[] for i in range(args.num_episodes)]
+		rewards = [[] for i in range(args.num_episodes)]
+		for episode in range(args.num_episodes):
+		    obs=env.reset()
+		    state = torch.Tensor(np.append(obs['robot0_robot-state'],obs['object-state']))
+		    done=False
+		    while done==False: 
+		        action, log_prob = agent.select_action(state)
+		        action_cpu = [x.to('cpu') for x in action]
+		        obs, reward, done, info = env.step(action_cpu)
+		        log_probs[episode].append(log_prob)
+	        	rewards[episode].append(reward)
+		        
+		agent.epoch_update_parameters(rewards, log_probs)
+		print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards,axis=1).mean()))
+		wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
+
+		if epoch%20==0:
+			torch.save(agent.model.state_dict(),'{}.pkl'.format(args.wandb_name))
+			wandb.save('{}.pkl'.format(args.wandb_name))
+
+elif args.algo = 'DDPG':
+	sys.exit('Implementation is currently being constructed.')
+	
 else:
 	sys.exit('Incorrect algorithms specification. Please check the algorithm argument provided.')
 
-# Begin the training process
-for epoch in range(args.num_epochs):
-	log_probs = [[] for i in range(args.num_episodes)]
-	rewards = [[] for i in range(args.num_episodes)]
-	for episode in range(args.num_episodes):
-	    obs=env.reset()
-	    state = torch.Tensor(np.append(obs['robot0_robot-state'],obs['object-state']))
-	    done=False
-	    while done==False: 
-	        action, log_prob = agent.select_action(state)
-	        action_cpu = [x.to('cpu') for x in action]
-	        obs, reward, done, info = env.step(action_cpu)
-	        log_probs[episode].append(log_prob)
-        	rewards[episode].append(reward)
-	        
-	agent.epoch_update_parameters(rewards, log_probs)
-	print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards,axis=1).mean()))
-	wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
-
-	if epoch%20==0:
-		torch.save(agent.model.state_dict(),'{}.pkl'.format(args.wandb_name))
-		wandb.save('{}.pkl'.format(args.wandb_name))
