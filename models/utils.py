@@ -1,16 +1,20 @@
 import os
+import random
 from collections import deque
 import numpy as np
 
+import torch
+from torch.autograd import Variable
+
 class ReplayBuffer:
-	def __init__(self, max_size, state_dim, action_dim):
-		self.buffer = deque(maxlen = max_size)
+    def __init__(self, max_size, state_dim, action_dim):
+        self.buffer = deque(maxlen = max_size)
 
-	def store_transition(self, state, action, reward, state_, done):
-		experience = (state, action, reward, state_, done)
-		self.buffer.append(experience)
+    def store_transition(self, state, action, reward, state_, done):
+        experience = (state, action, reward, state_, done)
+        self.buffer.append(experience)
 
-	def sample(self, batch_size):
+    def sample(self, batch_size):
         state_batch = []
         action_batch = []
         reward_batch = []
@@ -34,9 +38,9 @@ class ReplayBuffer:
 
 
 class OUNoise(object):
-	"""
-	Taken from https://github.com/vitchyr/rlkit/blob/master/rlkit/exploration_strategies/ou_strategy.py
-	"""
+    """
+    Taken from https://github.com/vitchyr/rlkit/blob/master/rlkit/exploration_strategies/ou_strategy.py
+    """
     def __init__(self, action_space, mu=0.0, theta=0.15, max_sigma=0.3, min_sigma=0.3, decay_period=100000):
         self.mu           = mu
         self.theta        = theta
@@ -76,9 +80,10 @@ def hard_update(target, source):
             target_param.data.copy_(param.data)
 
 
-def to_tensor(ndarray, requires_grad=False, dtype=FLOAT):
+def to_tensor(ndarray, requires_grad=False, dtype=float):
+    print(ndarray)
     return Variable(
-        torch.from_numpy(ndarray), volatile=volatile, requires_grad=requires_grad
+        torch.FloatTensor(ndarray), volatile=volatile, requires_grad=requires_grad
     ).type(dtype)
 # Add normalize action function
 
