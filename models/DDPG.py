@@ -1,5 +1,4 @@
-# Implementation of DDPG algorithm with inspiration from
-# "https://github.com/ghliu/pytorch-ddpg/blob/master/ddpg.py"
+# Implementation of DDPG algorithm with inspiration from "https://github.com/ghliu/pytorch-ddpg/blob/master/ddpg.py"
 
 import robosuite as suite
 import numpy as np
@@ -26,8 +25,8 @@ class DDPGActor(nn.Module):
         self.l3 = nn.Linear(hidden_size, action_dim)
 
     def forward(self, x):
-        x = F.Relu(self.l1(x))
-        x = F.Relu(self.l2(torch.cat(x,)))
+        x = F.relu(self.l1(x))
+        x = F.relu(self.l2(x))
         x = self.l3(x)
 
         return x
@@ -44,8 +43,8 @@ class DDPGCritic(nn.Module):
 
     def forward(self, xs):
         x, a = xs
-        x = F.Relu(self.l1(torch.cat([x, a], 1)))
-        x = F.Relu(self.l2(x))
+        x = F.relu(self.l1(torch.cat([x, a], 1)))
+        x = F.relu(self.l2(x))
         x = self.l3(x)
 
         return x
@@ -78,10 +77,13 @@ class DDPG:
         self.max_mem_size = args.max_mem_size
         self.memory = ReplayBuffer(args.max_mem_size, state_dim, action_dim)
 
+        self.random_process = OrnsteinUhlenbeckProcess(args.theta)
+
         self.tau = args.tau
         self.batch_size = args.batch_size
         self.lr = args.lr
         self.gamma = args.gamma
+        self.epsilon = 1.0
         self.depsilon = 1.0 / args.epsilon
 
         self.s_t = None
@@ -96,10 +98,8 @@ class DDPG:
 
 
     def select_action(self, state, decay_epsilon=True):
-        action = to_numpy(
-            self.actor(to_tensor(np.array([s_t])))
-        ).squeeze(0)
-        action += self.is_training*max(self.epsilon, 0)*self.random_process.sample()
+        action = self.actor(to_tensor(state)).detach().numpy()
+        action += self.is_training*self.random_process.sample()
         action = np.clip(action, -1., 1.)
 
         if decay_epsilon:
@@ -119,11 +119,11 @@ class DDPG:
         next_state_batch, done_batch = self.memory.sample(self.batch_size)
 
         # Calculate next q-values
-        q_next = self.critic_target(next_state_batch, \
-                     self.actor_target(to_tensor(next_state_batch)))
+        q_next = self.critic_target([to_tensor(next_state_batch), \
+                     self.actor_target(to_tensor(next_state_batch))])
 
         target_q_batch = to_tensor(reward_batch) + \
-            self.discount*to_tensor(done_batch.astype(np.float))*q_next
+            self.gamma*to_tensor(done_batch)*q_next
 
         # Critic update
         self.critic.zero_grad()

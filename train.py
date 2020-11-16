@@ -25,7 +25,6 @@ def train_reinforce():
             done=False
             while done==False:
                 state = torch.Tensor(np.append(obs['robot0_robot-state'],obs['object-state'])) 
-                print(state)
                 action, log_prob = agent.select_action(state)
                 action_cpu = [x.to('cpu') for x in action]
                 obs, reward, done, info = env.step(action_cpu)
@@ -44,22 +43,35 @@ def train_reinforce():
 def train_ddpg():
     agent = DDPG(state_dim, env.action_dim, args)
     iteration = 0
-    for episode in range(args.num_episodes):
-        obs = env.reset()
-        state = torch.Tensor(np.append(obs['robot0_robot-state'],obs['object-state']))
-        done=False
-        while done==False: 
-            if iteration <= args.warmup:
-                action = agent.random_action()
-                iteration += 1
-            else:
-                action = agent.select_action(observation)           
-                iteration += 1
-            obs, reward,done, info = env.step(action)
-            state = torch.Tensor(np.append(obs['robot0_robot-state'],obs['object-state']))
-            agent.observe(reward, state, done)
-            if iteration > args.warmup:
-                agent.update_parameters()
+    for epoch in range(args.num_epochs):
+        rewards = []
+        for episode in range(args.num_episodes):
+            obs = env.reset()
+            state = np.append(obs['robot0_robot-state'],obs['object-state'])
+            agent.s_t = state
+            done=False
+            while done==False: 
+                if iteration <= args.warmup:
+                    action = agent.random_action()
+                    iteration += 1
+                else:
+                    action = agent.select_action(state)           
+                    iteration += 1
+                obs, reward,done, info = env.step(action)
+                rewards.append(reward)
+                state = np.append(obs['robot0_robot-state'],obs['object-state'])
+                agent.observe(reward, state, done)
+                if iteration > args.warmup:
+                    agent.update_parameters()
+
+        print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards)/len(rewards)))
+        wandb.log({'epoch_reward': np.sum(rewards)/len(rewards)})
+
+        if epoch%20==0:
+            torch.save(agent.actor,'{}.pt'.format(args.wandb_name))
+            wandb.save('{}.pt'.format(args.wandb_name))
+
+
 
 
 if __name__ == "__main__":
@@ -74,6 +86,7 @@ if __name__ == "__main__":
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--epsilon', type=float, default=10000)
     parser.add_argument('--warmup', type=int, default=100)
+    parser.add_argument('--theta', type=int, default=0.15)
     parser.add_argument('--gamma', type=float, default=0.99,
                         help='discount factor for reward (default: 0.99)')
     parser.add_argument('--num_epochs',type=int, default=500,
