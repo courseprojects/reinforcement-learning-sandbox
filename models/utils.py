@@ -10,7 +10,7 @@ class ReplayBuffer:
 		experience = (state, action, reward, state_, done)
 		self.buffer.append(experience)
 
-	def sample_buffer(self, batch_size):
+	def sample(self, batch_size):
         state_batch = []
         action_batch = []
         reward_batch = []
@@ -64,4 +64,21 @@ class OUNoise(object):
         return np.clip(action + ou_state, self.low, self.high)
 
 
+def soft_update(target, source, tau):
+    for target_param, param in zip(target.parameters(), source.parameters()):
+        target_param.data.copy_(
+            target_param.data * (1.0 - tau) + param.data * tau
+        )
+
+
+def hard_update(target, source):
+    for target_param, param in zip(target.parameters(), source.parameters()):
+            target_param.data.copy_(param.data)
+
+
+def to_tensor(ndarray, volatile=False, requires_grad=False, dtype=FLOAT):
+    return Variable(
+        torch.from_numpy(ndarray), volatile=volatile, requires_grad=requires_grad
+    ).type(dtype)
 # Add normalize action function
+
