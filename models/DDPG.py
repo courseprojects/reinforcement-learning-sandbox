@@ -117,19 +117,25 @@ class DDPG:
         # Sample batch from replay buffer
         state_batch, action_batch, reward_batch, \
         next_state_batch, done_batch = self.memory.sample(self.batch_size)
+        
+        state_batch = to_tensor(state_batch).to(device)
+        action_batch = to_tensor(action_batch).to(device)
+        reward_batch = to_tensor(reward_batch).to(device)
+        next_state_batch = to_tensor(next_state_batch).to(device)
+        done_batch = to_tensor(done_batch).to(device)
 
         # Calculate next q-values
         with torch.no_grad():
-            q_next = self.critic_target([to_tensor(next_state_batch), \
-                         self.actor_target(to_tensor(next_state_batch))])
+            q_next = self.critic_target([next_state_batch, \
+                         self.actor_target(next_state_batch)])
 
-        target_q_batch = to_tensor(reward_batch) + \
-            self.gamma*q_next
+            target_q_batch = reward_batch + \
+                self.gamma*q_next
 
         # Critic update
         self.critic.zero_grad()
 
-        q_batch = self.critic([to_tensor(state_batch), to_tensor(action_batch)])
+        q_batch = self.critic([state_batch, action_batch])
         value_loss = self.criterion(q_batch, target_q_batch)
         value_loss.backward()
         self.critic_optim.step()
@@ -138,8 +144,8 @@ class DDPG:
         self.actor.zero_grad()
 
         policy_loss = -self.critic([
-            to_tensor(state_batch),
-            self.actor(to_tensor(state_batch))
+            state_batch,
+            self.actor(state_batch)
         ])
 
         policy_loss = policy_loss.mean()
