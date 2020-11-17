@@ -98,7 +98,7 @@ class DDPG:
 
 
     def select_action(self, state, decay_epsilon=True):
-        action = self.actor(to_tensor(state)).detach().numpy()
+        action = self.actor(to_tensor(state).to(device)).detach().numpy()
         action += self.is_training*self.random_process.sample()
         action = np.clip(action, -1., 1.)
 
