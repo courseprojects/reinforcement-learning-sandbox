@@ -119,11 +119,12 @@ class DDPG:
         next_state_batch, done_batch = self.memory.sample(self.batch_size)
 
         # Calculate next q-values
-        q_next = self.critic_target([to_tensor(next_state_batch), \
-                     self.actor_target(to_tensor(next_state_batch))])
+        with torch.no_grad():
+            q_next = self.critic_target([to_tensor(next_state_batch), \
+                         self.actor_target(to_tensor(next_state_batch))])
 
         target_q_batch = to_tensor(reward_batch) + \
-            self.gamma*to_tensor(done_batch)*q_next
+            self.gamma*q_next
 
         # Critic update
         self.critic.zero_grad()
