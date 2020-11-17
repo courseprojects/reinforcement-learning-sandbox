@@ -23,11 +23,14 @@ class DDPGActor(nn.Module):
         self.l1 = nn.Linear(state_dim, hidden_size)
         self.l2 = nn.Linear(hidden_size, hidden_size)
         self.l3 = nn.Linear(hidden_size, action_dim)
+        self.tanh = nn.Tanh()
+
 
     def forward(self, x):
         x = F.relu(self.l1(x))
         x = F.relu(self.l2(x))
         x = self.l3(x)
+        x = self.tanh(x)
 
         return x
 
@@ -37,14 +40,14 @@ class DDPGCritic(nn.Module):
 
     def __init__(self, state_dim, action_dim, hidden_size):
         super(DDPGCritic, self).__init__()
-        self.l1 = nn.Linear(state_dim+action_dim, hidden_size)
-        self.l2 = nn.Linear(hidden_size, hidden_size)
+        self.l1 = nn.Linear(state_dim, hidden_size)
+        self.l2 = nn.Linear(hidden_size+action_dim, hidden_size)
         self.l3 = nn.Linear(hidden_size, 1)
 
     def forward(self, xs):
         x, a = xs
-        x = F.relu(self.l1(torch.cat([x, a], 1)))
-        x = F.relu(self.l2(x))
+        x = F.relu(self.l1(x))
+        x = F.relu(self.l2(torch.cat([x,a],1)))
         x = self.l3(x)
 
         return x
@@ -61,27 +64,29 @@ class DDPG:
         self.actor = self.actor.to(device)
         self.actor_target = DDPGActor(state_dim, action_dim, args.hidden_size)
         self.actor_target = self.actor_target.to(device)
-        self.actor_optim = optim.Adam(self.actor.parameters(), lr=args.lr)
+        self.actor_optim = optim.Adam(self.actor.parameters(), lr=args.lr_actor)
 
         self.critic = DDPGCritic(state_dim, action_dim, args.hidden_size)
         self.critic = self.critic.to(device)
         self.critic_target = DDPGCritic(
             state_dim, action_dim, args.hidden_size)
         self.critic_target = self.critic_target.to(device)
-        self.critic_optim = optim.Adam(self.critic.parameters(), lr=args.lr)
+        self.critic_optim = optim.Adam(self.critic.parameters(), lr=args.lr_critic)
         self.criterion = nn.MSELoss()
 
         hard_update(self.actor_target, self.actor)
         hard_update(self.critic_target, self.critic)
 
         self.max_mem_size = args.max_mem_size
-        self.memory = ReplayBuffer(args.max_mem_size, state_dim, action_dim)
+        self.memory = ReplayBuffer(args.max_mem_size)
 
         self.random_process = OrnsteinUhlenbeckProcess(args.theta)
 
         self.tau = args.tau
         self.batch_size = args.batch_size
         self.lr = args.lr
+        self.lr_actor = args.lr_actor
+        self.lr_critic = args.lr_critic
         self.gamma = args.gamma
         self.epsilon = 1.0
         self.depsilon = 1.0 / args.epsilon
@@ -99,8 +104,8 @@ class DDPG:
 
     def select_action(self, state, decay_epsilon=True):
         action = self.actor(to_tensor(state).to(device)).detach().to('cpu').numpy()
-        action += self.is_training*self.random_process.sample()
-        action = np.clip(action, -1., 1.)
+        action += self.is_training*max(self.epsilon, 0)*self.random_process.sample()
+        #action = np.clip(action, -1., 1.)
 
         if decay_epsilon:
             self.epsilon -= self.depsilon
@@ -130,26 +135,30 @@ class DDPG:
                          self.actor_target(next_state_batch)])
 
             target_q_batch = reward_batch + \
-                self.gamma*q_next
+                self.gamma*q_next   # Need to add details for terminal case
 
         # Critic update
         self.critic.zero_grad()
+        self.critic.train()
 
         q_batch = self.critic([state_batch, action_batch])
-        value_loss = self.criterion(q_batch, target_q_batch)
-        value_loss.backward()
+        critic_loss = self.criterion(q_batch, target_q_batch)
+        critic_loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.critic.parameters(), 1)
         self.critic_optim.step()
 
         # Actor update 
+        self.critic.eval()
         self.actor.zero_grad()
+        self.actor.train()
 
-        policy_loss = -self.critic([
+        actor_loss = -self.critic([
             state_batch,
             self.actor(state_batch)
         ])
 
-        policy_loss = policy_loss.mean()
-        policy_loss.backward()
+        actor_loss = actor_loss.mean()
+        actor_loss.backward()
         self.actor_optim.step()
 
         # Target update

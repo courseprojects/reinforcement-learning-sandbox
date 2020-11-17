@@ -7,7 +7,7 @@ import torch
 from torch.autograd import Variable
 
 class ReplayBuffer:
-    def __init__(self, max_size, state_dim, action_dim):
+    def __init__(self, max_size):
         self.buffer = deque(maxlen = max_size)
 
     def store_transition(self, state, action, reward, state_, done):
