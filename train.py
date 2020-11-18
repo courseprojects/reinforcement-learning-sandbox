@@ -105,16 +105,13 @@ if __name__ == "__main__":
     parser.add_argument('--wandb_entity', type=str, default='peterdavidfagan', metavar='N',
                         help='name of user running experiment')
     args = parser.parse_args()
-
     os.environ['WANDB_API_KEY'] = args.wandb_api
     os.environ['WANDB_PROJECT'] = args.wandb_project
     os.environ['WANDB_NAME'] =  args.wandb_name
     os.environ['ENTITY'] = args.wandb_entity
 
-    wandb.init()
-    wandb.config.gamma = args.gamma
-    wandb.config.horizon = args.horizon
-    wandb.config.num_episodes = args.num_episodes
+    wandb.init(config=vars(args))
+    
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

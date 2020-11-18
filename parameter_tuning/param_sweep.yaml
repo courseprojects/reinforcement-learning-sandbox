@@ -3,8 +3,6 @@ description: High level optimization for DDPG.
 program: train.py
 method: grid
 parameters:
-  num_episodes:
-    values: [50]
   lr_actor: 
     values: [0.01, 0.001, 0.0001]
   lr_critic: 
