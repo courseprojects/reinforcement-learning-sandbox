@@ -96,7 +96,7 @@ if __name__ == "__main__":
                         help='number of episodes per epoch')
     parser.add_argument('--horizon', type=int, default=200,
                         help='max episode length (default: 200)')
-    parser.add_argument('--wandb_api', type=str, default=None, 
+    parser.add_argument('--wandb_api', type=str, default='fe24b1f8772e8e3ff1d90417d2ef92e3928414a8', 
                         help='wandb api key')
     parser.add_argument('--wandb_project', type=str, default='cs221-project',
                         help='wandb project name')

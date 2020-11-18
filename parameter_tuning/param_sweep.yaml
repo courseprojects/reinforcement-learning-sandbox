@@ -3,12 +3,11 @@ description: High level optimization for DDPG.
 program: train.py
 method: grid
 parameters:
-  lr_actor: [0.01, 0.001, 0.0001]
-  lr_critic: [0.01, 0.001, 0.0001]
-  hidden_size: [250, 300, 400]
+  lr_actor: 
+    values: [0.01, 0.001, 0.0001]
+  lr_critic: 
+    values: [0.01, 0.001, 0.0001]
+  hidden_size:
+   values: [250, 300, 400]
 project: cs221-project
 entity: peterdavidfagan
-command: 
-  - ${interpreter}
-  - ${program}
-  - ${args}
