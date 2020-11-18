@@ -37,51 +37,27 @@ class ReplayBuffer:
         return len(self.buffer)
 
 
-class RandomProcess(object):
-    def reset_states(self):
-        pass
-
-class AnnealedGaussianProcess(RandomProcess):
-    def __init__(self, mu, sigma, sigma_min, n_steps_annealing):
-        self.mu = mu
-        self.sigma = sigma
-        self.n_steps = 0
-
-        if sigma_min is not None:
-            self.m = -float(sigma - sigma_min) / float(n_steps_annealing)
-            self.c = sigma
-            self.sigma_min = sigma_min
-        else:
-            self.m = 0.
-            self.c = sigma
-            self.sigma_min = sigma
-
-    @property
-    def current_sigma(self):
-        sigma = max(self.sigma_min, self.m * float(self.n_steps) + self.c)
-        return sigma
-
-
-# Based on http://math.stackexchange.com/questions/1287634/implementing-ornstein-uhlenbeck-in-matlab
-class OrnsteinUhlenbeckProcess(AnnealedGaussianProcess):
-    def __init__(self, theta, mu=0., sigma=1., dt=1e-2, x0=None, size=1, sigma_min=None, n_steps_annealing=1000):
-        super(OrnsteinUhlenbeckProcess, self).__init__(mu=mu, sigma=sigma, sigma_min=sigma_min, n_steps_annealing=n_steps_annealing)
+class OUActionNoise(object):
+    def __init__(self, mu, sigma=0.15, theta=.2, dt=1e-2, x0=None):
         self.theta = theta
         self.mu = mu
+        self.sigma = sigma
         self.dt = dt
         self.x0 = x0
-        self.size = size
-        self.reset_states()
+        self.reset()
 
-    def sample(self):
-        x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + self.current_sigma * np.sqrt(self.dt) * np.random.normal(size=self.size)
+    def __call__(self):
+        x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + \
+            self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.mu.shape)
         self.x_prev = x
-        self.n_steps += 1
         return x
 
-    def reset_states(self):
-        self.x_prev = self.x0 if self.x0 is not None else np.zeros(self.size)
+    def reset(self):
+        self.x_prev = self.x0 if self.x0 is not None else np.zeros_like(self.mu)
 
+    def __repr__(self):
+        return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(
+                                                            self.mu, self.sigma)
 
 def soft_update(target, source, tau):
     for target_param, param in zip(target.parameters(), source.parameters()):
@@ -97,3 +73,8 @@ def hard_update(target, source):
 
 def to_tensor(ndarray):
     return torch.FloatTensor(ndarray)
+
+def fanin_init(size, fanin=None):
+    fanin = fanin or size[0]
+    v = 1. / np.sqrt(fanin)
+    return torch.Tensor(size).uniform_(-v, v)

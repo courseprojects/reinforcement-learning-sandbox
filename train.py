@@ -44,7 +44,7 @@ def train_ddpg():
     agent = DDPG(state_dim, env.action_dim, args)
     iteration = 0
     for epoch in range(args.num_epochs):
-        rewards = []
+        rewards = [[] for i in range(args.num_episodes)]
         for episode in range(args.num_episodes):
             obs = env.reset()
             state = np.append(obs['robot0_robot-state'],obs['object-state'])
@@ -58,14 +58,14 @@ def train_ddpg():
                     action = agent.select_action(state)           
                     iteration += 1
                 obs, reward,done, info = env.step(action)
-                rewards.append(reward)
+                rewards[episode].append(reward)
                 state = np.append(obs['robot0_robot-state'],obs['object-state'])
                 agent.observe(reward, state, done)
                 if iteration > args.warmup:
                     agent.update_parameters()
 
-        print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards)/len(rewards)))
-        wandb.log({'epoch_reward': np.sum(rewards)/len(rewards)})
+        print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards,axis=1).mean()))
+        wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
 
         if epoch%20==0:
             torch.save(agent.actor,'{}.pt'.format(args.wandb_name))

@@ -18,19 +18,26 @@ from models.utils import * # Improve by adding path var
 class DDPGActor(nn.Module):
     '''This class represents our actor model'''
 
-    def __init__(self, state_dim, action_dim, hidden_size):
+    def __init__(self, state_dim, action_dim, hidden_size, init_w=3e-3):
         super(DDPGActor, self).__init__()
         self.l1 = nn.Linear(state_dim, hidden_size)
+        self.bn1 = nn.LayerNorm(hidden_size)
         self.l2 = nn.Linear(hidden_size, hidden_size)
+        self.bn2 = nn.LayerNorm(hidden_size)
         self.l3 = nn.Linear(hidden_size, action_dim)
-        self.tanh = nn.Tanh()
+        self.init_weights(init_w)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.to(self.device)
 
+    def init_weights(self, init_w):
+        self.l1.weight.data = fanin_init(self.l1.weight.data.size())
+        self.l2.weight.data = fanin_init(self.l2.weight.data.size())
+        self.l3.weight.data.uniform_(-init_w, init_w)
 
     def forward(self, x):
-        x = F.relu(self.l1(x))
-        x = F.relu(self.l2(x))
-        x = self.l3(x)
-        x = self.tanh(x)
+        x = F.relu(self.bn1(self.l1(x)))
+        x = F.relu(self.bn2(self.l2(x)))
+        x = torch.tanh(self.l3(x))
 
         return x
 
@@ -38,16 +45,26 @@ class DDPGActor(nn.Module):
 class DDPGCritic(nn.Module):
     '''This class represents our critic model'''
 
-    def __init__(self, state_dim, action_dim, hidden_size):
+    def __init__(self, state_dim, action_dim, hidden_size, init_w=3e-3):
         super(DDPGCritic, self).__init__()
         self.l1 = nn.Linear(state_dim, hidden_size)
+        self.bn1 = nn.LayerNorm(hidden_size)
         self.l2 = nn.Linear(hidden_size+action_dim, hidden_size)
+        self.bn2 = nn.LayerNorm(hidden_size)
         self.l3 = nn.Linear(hidden_size, 1)
+        self.init_weights(init_w)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.to(self.device)
+
+    def init_weights(self, init_w):
+        self.l1.weight.data = fanin_init(self.l1.weight.data.size())
+        self.l2.weight.data = fanin_init(self.l2.weight.data.size())
+        self.l3.weight.data.uniform_(-init_w, init_w)
 
     def forward(self, xs):
         x, a = xs
-        x = F.relu(self.l1(x))
-        x = F.relu(self.l2(torch.cat([x,a],1)))
+        x = F.relu(self.bn1(self.l1(x)))
+        x = F.relu(self.bn2(self.l2(torch.cat([x,a],1))))
         x = self.l3(x)
 
         return x
@@ -57,20 +74,16 @@ class DDPG:
     '''This class represents our implementation of DDPG'''
 
     def __init__(self, state_dim, action_dim, args):
+
         self.state_dim = state_dim
         self.action_dim = action_dim
 
         self.actor = DDPGActor(state_dim, action_dim, args.hidden_size)
-        self.actor = self.actor.to(device)
         self.actor_target = DDPGActor(state_dim, action_dim, args.hidden_size)
-        self.actor_target = self.actor_target.to(device)
         self.actor_optim = optim.Adam(self.actor.parameters(), lr=args.lr_actor)
 
         self.critic = DDPGCritic(state_dim, action_dim, args.hidden_size)
-        self.critic = self.critic.to(device)
-        self.critic_target = DDPGCritic(
-            state_dim, action_dim, args.hidden_size)
-        self.critic_target = self.critic_target.to(device)
+        self.critic_target = DDPGCritic(state_dim, action_dim, args.hidden_size)
         self.critic_optim = optim.Adam(self.critic.parameters(), lr=args.lr_critic)
         self.criterion = nn.MSELoss()
 
@@ -80,7 +93,7 @@ class DDPG:
         self.max_mem_size = args.max_mem_size
         self.memory = ReplayBuffer(args.max_mem_size)
 
-        self.random_process = OrnsteinUhlenbeckProcess(args.theta)
+        self.random_process = OUActionNoise(mu=np.zeros(action_dim))
 
         self.tau = args.tau
         self.batch_size = args.batch_size
@@ -103,13 +116,15 @@ class DDPG:
 
 
     def select_action(self, state, decay_epsilon=True):
-        action = self.actor(to_tensor(state).to(device)).detach().to('cpu').numpy()
-        action += self.is_training*max(self.epsilon, 0)*self.random_process.sample()
-        #action = np.clip(action, -1., 1.)
+        self.actor.eval()
+        action = self.actor(to_tensor(state).to(self.actor.device)).to('cpu').detach().numpy()
+        action += self.is_training*max(self.epsilon, 0)*self.random_process()
+        action = np.clip(action, -1., 1.)
 
         if decay_epsilon:
             self.epsilon -= self.depsilon
-        
+
+        self.actor.train()
         self.a_t = action
         return action
 
@@ -144,7 +159,6 @@ class DDPG:
         q_batch = self.critic([state_batch, action_batch])
         critic_loss = self.criterion(q_batch, target_q_batch)
         critic_loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.critic.parameters(), 1)
         self.critic_optim.step()
 
         # Actor update 
@@ -152,12 +166,12 @@ class DDPG:
         self.actor.zero_grad()
         self.actor.train()
 
-        actor_loss = -self.critic([
+        actor_loss = self.critic([
             state_batch,
             self.actor(state_batch)
         ])
 
-        actor_loss = actor_loss.mean()
+        actor_loss = -actor_loss.mean()
         actor_loss.backward()
         self.actor_optim.step()
 
