@@ -37,15 +37,19 @@ state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
 
 # Setting algorithm according to args
 if args.algo=='REINFORCE':
-	# agent = REINFORCE(state_dim,env.action_dim, args.gamma, args.lr, args.num_episodes, args.horizon, args.hidden_size)
-	agent.model.load_state_dict(torch.load(args.model_path)) # Change to load entire model
-
+	agent = REINFORCE(state_dim,env.action_dim, args.gamma, args.lr, args.num_episodes, args.horizon, args.hidden_size)
+	agent.model = torch.load(args.model_path) 
+elif args.algo=='DDPG':
+    agent = DDPG(state_dim, env.action_dim, args)
 else:
 	sys.exit('Incorrect algorithms specification. Please check the algorithm argument provided.')
 
 # Visualize a single run
 done=False
 while done==False: 
-    action, log_prob = agent.select_action(state)
+    if args.algo=='REINFORCE':
+        action, log_prob = agent.select_action(state)
+    else:
+        action = agent.select_action(state)           
     obs, reward, done, info = env.step(action)
     env.render()

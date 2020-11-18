@@ -16,7 +16,6 @@ from models.DDPG import DDPG
 
 def train_reinforce():
     agent = REINFORCE(state_dim,env.action_dim, args.gamma, args.lr, args.num_episodes, args.horizon, args.hidden_size)
-
     for epoch in range(args.num_epochs):
         log_probs = [[] for i in range(args.num_episodes)]
         rewards = [[] for i in range(args.num_episodes)]
