@@ -75,7 +75,7 @@ def train_ddpg():
                 for _ in range(args.horizon):
                     agent.update_parameters()
 
-        if args.reward_shaping==True:
+        if args.dense_rewards==True:
             print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards,axis=1).mean()))
             wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
         else:
