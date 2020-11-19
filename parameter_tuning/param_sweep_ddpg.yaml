@@ -1,15 +1,18 @@
-name: parameter_sweep_1
+name: parameter_sweep_ddpg
 description: High level optimization for DDPG.
 program: train.py
 method: grid
+metric:
+  name: epoch_reward
+  goal: maximise
 parameters:
   num_episodes:
-    values: [25]
+    values: [10]
   lr_actor: 
-    values: [0.01, 0.001, 0.0001]
+    values: [0.001, 0.0001]
   lr_critic: 
-    values: [0.01, 0.001, 0.0001]
+    values: [0.001, 0.0001]
   hidden_size:
-   values: [250, 300, 400]
+   values: [300]
 project: cs221-project
 entity: peterdavidfagan

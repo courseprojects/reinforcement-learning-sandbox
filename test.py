@@ -75,3 +75,5 @@ while done==False:
     obs, reward, done, info = env.step(action)
     state = np.append(obs['robot0_robot-state'],obs['object-state'])
     env.render()
+
+# Add code to print out model stats + plots
