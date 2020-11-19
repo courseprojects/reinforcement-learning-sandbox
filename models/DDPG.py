@@ -73,7 +73,7 @@ class DDPGCritic(nn.Module):
 class DDPG:
     '''This class represents our implementation of DDPG'''
 
-    def __init__(self, state_dim, action_dim, args):
+    def __init__(self, state_dim, action_dim, args, robo_env, enable_her = False):
 
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -86,12 +86,14 @@ class DDPG:
         self.critic_target = DDPGCritic(state_dim, action_dim, args.hidden_size)
         self.critic_optim = optim.Adam(self.critic.parameters(), lr=args.lr_critic)
         self.criterion = nn.MSELoss()
+        self.robo_env = robo_env
 
         hard_update(self.actor_target, self.actor)
         hard_update(self.critic_target, self.critic)
 
         self.max_mem_size = args.max_mem_size
-        self.memory = ReplayBuffer(args.max_mem_size)
+        # self.memory = ReplayBuffer(args.max_mem_size)
+        self.memory = ReplayBufferWithHindsight(ReplayBuffer(args.max_mem_size), enable_her, Lift_reward_func1, self.robo_env)
 
         self.random_process = OUActionNoise(mu=np.zeros(action_dim))
 
@@ -137,7 +139,6 @@ class DDPG:
         # Sample batch from replay buffer
         state_batch, action_batch, reward_batch, \
         next_state_batch, done_batch = self.memory.sample(self.batch_size)
-        
         state_batch = to_tensor(state_batch).to(device)
         action_batch = to_tensor(action_batch).to(device)
         reward_batch = to_tensor(reward_batch).to(device)

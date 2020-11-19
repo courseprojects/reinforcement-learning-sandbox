@@ -40,7 +40,8 @@ def train_reinforce():
 
 
 def train_ddpg():
-    agent = DDPG(state_dim, env.action_dim, args)
+    ## NOTE: if HER is enabled, must configure env to use sparse reward
+    agent = DDPG(state_dim, env.action_dim, args, env, enable_her=False)
     iteration = 0
     for epoch in range(args.num_epochs):
         rewards = [[] for i in range(args.num_episodes)]
@@ -49,17 +50,23 @@ def train_ddpg():
             state = np.append(obs['robot0_robot-state'],obs['object-state'])
             agent.s_t = state
             done=False
+            itr_cnt = 0
             while done==False: 
                 if iteration <= args.warmup:
                     action = agent.random_action()
-                    iteration += 1
                 else:
-                    action = agent.select_action(state)           
-                    iteration += 1
+                    action = agent.select_action(state)        
+                iteration += 1
+
                 obs, reward,done, info = env.step(action)
                 rewards[episode].append(reward)
                 state = np.append(obs['robot0_robot-state'],obs['object-state'])
                 agent.observe(reward, state, done)
+                itr_cnt += 1
+                # if iteration > args.warmup:
+                #     agent.update_parameters()
+            # this is equivalent to doing agent.update_parameters() N number of times in the while loop.
+            for _ in range(itr_cnt):
                 if iteration > args.warmup:
                     agent.update_parameters()
 
