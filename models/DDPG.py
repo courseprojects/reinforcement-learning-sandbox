@@ -1,4 +1,5 @@
-# Implementation of DDPG algorithm with inspiration from "https://github.com/ghliu/pytorch-ddpg/blob/master/ddpg.py"
+# Implementation of DDPG algorithm with inspiration from 
+# "https://github.com/ghliu/pytorch-ddpg/blob/master/ddpg.py"
 
 import robosuite as suite
 import numpy as np
@@ -12,11 +13,15 @@ import torch.distributions as dist
 from torch.autograd import Variable
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-from models.utils import * # Improve by adding path var
+from models.utils import * 
 
 
 class DDPGActor(nn.Module):
-    '''This class represents our actor model'''
+    '''
+    Pytorch neural network for Actor model
+
+    :param 
+    '''
 
     def __init__(self, state_dim, action_dim, hidden_size, init_w=3e-3):
         super(DDPGActor, self).__init__()
@@ -43,7 +48,11 @@ class DDPGActor(nn.Module):
 
 
 class DDPGCritic(nn.Module):
-    '''This class represents our critic model'''
+    '''
+    Pytorch neural network for critic model
+
+    :param 
+    '''
 
     def __init__(self, state_dim, action_dim, hidden_size, init_w=3e-3):
         super(DDPGCritic, self).__init__()
@@ -71,9 +80,14 @@ class DDPGCritic(nn.Module):
 
 
 class DDPG:
-    '''This class represents our implementation of DDPG'''
+    '''
+    Implementation of Deep Deterministic Policy Gradient according to 
+    https://arxiv.org/pdf/1509.02971.pdf
 
-    def __init__(self, state_dim, action_dim, args, robo_env, enable_her = False):
+    :param
+    '''
+
+    def __init__(self, state_dim, action_dim, env, args):
 
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -86,14 +100,13 @@ class DDPG:
         self.critic_target = DDPGCritic(state_dim, action_dim, args.hidden_size)
         self.critic_optim = optim.Adam(self.critic.parameters(), lr=args.lr_critic)
         self.criterion = nn.MSELoss()
-        self.robo_env = robo_env
+        self.env = env
 
         hard_update(self.actor_target, self.actor)
         hard_update(self.critic_target, self.critic)
 
         self.max_mem_size = args.max_mem_size
-        # self.memory = ReplayBuffer(args.max_mem_size)
-        self.memory = ReplayBufferWithHindsight(ReplayBuffer(args.max_mem_size), enable_her, Lift_reward_func1, self.robo_env)
+        self.memory = ReplayBufferWithHindsight(ReplayBuffer(args.max_mem_size), args.enable_her, Lift_reward_func1, self.env)
 
         self.random_process = OUActionNoise(mu=np.zeros(action_dim))
 

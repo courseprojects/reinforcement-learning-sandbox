@@ -15,6 +15,9 @@ from models.DDPG import DDPG
 
 
 def train_reinforce():
+    '''
+    This function trains our REINFORCE implementation.
+    '''
     agent = REINFORCE(state_dim,env.action_dim, args.gamma, args.lr, args.num_episodes, args.horizon, args.hidden_size)
     for epoch in range(args.num_epochs):
         log_probs = [[] for i in range(args.num_episodes)]
@@ -40,8 +43,10 @@ def train_reinforce():
 
 
 def train_ddpg():
-    ## NOTE: if HER is enabled, must configure env to use sparse reward
-    agent = DDPG(state_dim, env.action_dim, args, env, enable_her=False)
+    '''
+    This function trains our DDPG and DDPG+HER implementations.
+    '''
+    agent = DDPG(state_dim, env.action_dim, env,args)
     iteration = 0
     for epoch in range(args.num_epochs):
         rewards = [[] for i in range(args.num_episodes)]
@@ -50,7 +55,6 @@ def train_ddpg():
             state = np.append(obs['robot0_robot-state'],obs['object-state'])
             agent.s_t = state
             done=False
-            itr_cnt = 0
             while done==False: 
                 if iteration <= args.warmup:
                     action = agent.random_action()
@@ -62,20 +66,26 @@ def train_ddpg():
                 rewards[episode].append(reward)
                 state = np.append(obs['robot0_robot-state'],obs['object-state'])
                 agent.observe(reward, state, done)
-                itr_cnt += 1
                 # if iteration > args.warmup:
                 #     agent.update_parameters()
-            # this is equivalent to doing agent.update_parameters() N number of times in the while loop.
-            for _ in range(itr_cnt):
-                if iteration > args.warmup:
+
+
+            # Update network weights after warm-up period
+            if iteration > args.warmup:
+                for _ in range(args.horizon):
                     agent.update_parameters()
 
-        print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards,axis=1).mean()))
-        wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
+        if args.reward_shaping==True:
+            print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards,axis=1).mean()))
+            wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
+        else:
+            pass
+            #implement tracking of sparse rewards here
 
+        # Save models 
         if epoch%20==0:
-            torch.save(agent.actor,'{}.pt'.format(args.wandb_name))
-            wandb.save('{}.pt'.format(args.wandb_name))
+            torch.save(agent.actor,'{}_{}.pt'.format(args.algo, epoch))
+            wandb.save('{}_{}.pt'.format(args.algo, epoch))
 
 
 
@@ -85,6 +95,8 @@ if __name__ == "__main__":
     parser.add_argument('--env_name', type=str, default='Lift')
     parser.add_argument('--robot', type=str, default='Panda')
     parser.add_argument('--algo', type=str, default='DDPG')
+    parser.add_argument('--enable_her',type=bool,default=False)
+    parser.add_argument('--dense_rewards',type=bool,default=True)
     parser.add_argument('--hidden_size', type=int, default=256)
     parser.add_argument('--max_mem_size', type=int, default=50000)
     parser.add_argument('--tau', type=float, default=0.001)
@@ -131,7 +143,7 @@ if __name__ == "__main__":
         use_camera_obs=False,
         use_object_obs=True,                    
         horizon = args.horizon, 
-        reward_shaping=True                 
+        reward_shaping=args.dense_rewards                
     )
     obs = env.reset()
     state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
