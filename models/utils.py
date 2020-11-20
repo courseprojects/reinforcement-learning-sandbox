@@ -273,3 +273,23 @@ def fanin_init(size, fanin=None):
     fanin = fanin or size[0]
     v = 1. / np.sqrt(fanin)
     return torch.Tensor(size).uniform_(-v, v)
+
+
+'''
+If enabled, return random initializer for the target cube location
+:param x_distro: length 2 array of range for uniform distribution in x axis
+:param y_distro: length 2 array of range for uniform distribution in y axis
+Return None if any of the input isn't specified. In this case, this will tell env to have no initializer
+for the cube
+'''
+def maybe_randomize_cube_location(x_distro = None, y_distro = None):
+    if x_distro is None or y_distro is None or len(x_distro) != 2 or len(y_distro) != 2:
+        return None
+    return UniformRandomSampler(
+                x_range=x_distro,
+                y_range=y_distro,
+                ensure_object_boundary_in_range=False,
+                rotation=None,
+                z_offset=0.01,
+            )
+    

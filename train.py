@@ -123,6 +123,10 @@ if __name__ == "__main__":
                         help='name of run')
     parser.add_argument('--wandb_entity', type=str, default='peterdavidfagan', metavar='N',
                         help='name of user running experiment')
+    parser.add_argument('--cube_x_distro', type=list, default=[-0.3, 0.3],
+                        help='x distribution for cube location')
+    parser.add_argument('--cube_y_distro', type=list, default=[-0.3, 0.3],
+                        help='y distribution for cube location')
     args = parser.parse_args()
     os.environ['WANDB_API_KEY'] = args.wandb_api
     os.environ['WANDB_PROJECT'] = args.wandb_project
@@ -143,7 +147,8 @@ if __name__ == "__main__":
         use_camera_obs=False,
         use_object_obs=True,                    
         horizon = args.horizon, 
-        reward_shaping=args.dense_rewards                
+        reward_shaping=args.dense_rewards,
+        placement_initializer = maybe_randomize_cube_location(args.cube_x_distro, args.cube_y_distro)       
     )
     obs = env.reset()
     state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
