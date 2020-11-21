@@ -40,6 +40,7 @@ def train_reinforce():
         wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
 
         if epoch%20==0:
+            print('Saving model ...')
             torch.save(agent.model.state_dict(),'{}.pkl'.format(args.wandb_name))
             wandb.save('{}.pkl'.format(args.wandb_name))
 

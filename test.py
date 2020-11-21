@@ -73,6 +73,8 @@ def create_media():
 
         if done:
             break
+
+    print('Creating trajectory fig...')
     fig=go.Figure()
     fig.add_trace(go.Scatter3d(x=[x[0] for x in trajectory],y=[x[1] for x in trajectory],z=[x[2] for x in trajectory]))
     fig.add_trace(go.Scatter3d(x=[cube_pos[0][0]],y=[cube_pos[0][1]],z=[cube_pos[0][2]],
