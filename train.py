@@ -11,6 +11,8 @@ import torch.optim as optim
 
 from models.REINFORCE import REINFORCE
 from models.DDPG import DDPG
+from models.utils import maybe_randomize_cube_location
+from models.utils import maybe_randomize_robot_arm_location
 
 
 
@@ -127,6 +129,8 @@ if __name__ == "__main__":
                         help='x distribution for cube location')
     parser.add_argument('--cube_y_distro', type=list, default=[-0.3, 0.3],
                         help='y distribution for cube location')
+    parser.add_argument('--enable_arm_randomization', type=bool, default=False,
+                        help='enable arm randomization (uniform) for each of the 7 joints')
     args = parser.parse_args()
     os.environ['WANDB_API_KEY'] = args.wandb_api
     os.environ['WANDB_PROJECT'] = args.wandb_project
@@ -148,7 +152,8 @@ if __name__ == "__main__":
         use_object_obs=True,                    
         horizon = args.horizon, 
         reward_shaping=args.dense_rewards,
-        placement_initializer = maybe_randomize_cube_location(args.cube_x_distro, args.cube_y_distro)       
+        placement_initializer = maybe_randomize_cube_location(args.cube_x_distro, args.cube_y_distro),
+        initialization_noise = maybe_randomize_robot_arm_location(args.enable_arm_randomization, 0.3)     
     )
     obs = env.reset()
     state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
