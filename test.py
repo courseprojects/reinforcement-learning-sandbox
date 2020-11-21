@@ -43,9 +43,7 @@ def create_media():
         horizon = args.horizon, 
         camera_names=args.camera,
         camera_heights=args.height,
-        camera_widths=args.width,
-        placement_initializer = maybe_randomize_cube_location(args.cube_x_distro, args.cube_y_distro),
-        initialization_noise = maybe_randomize_robot_arm_location(args.enable_arm_randomization, 0.3) 
+        camera_widths=args.width, 
     )
     obs = env.reset()
     state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
@@ -86,15 +84,16 @@ def create_media():
 
     print('Creating trajectory fig...')
     fig=go.Figure()
-    fig.add_trace(go.Scatter3d(x=[x[0] for x in trajectory],y=[x[1] for x in trajectory],z=[x[2] for x in trajectory]))
-    fig.add_trace(go.Scatter3d(x=[cube_pos[0][0]],y=[cube_pos[0][1]],z=[cube_pos[0][2]],
+    fig.add_trace(go.Scatter3d(name='effector trajectory',x=[x[0] for x in trajectory],y=[x[1] for x in trajectory],z=[x[2] for x in trajectory]))
+    fig.add_trace(go.Scatter3d(name='cube_position',x=[cube_pos[0][0]],y=[cube_pos[0][1]],z=[cube_pos[0][2]],
                                 marker=dict(
                                 size=30,
                                 symbol='square',
                             )))
-    fig.update_layout()
-    fig.show()
-    fig.write_image('plot.png')
+    fig.update_layout(template='plotly_white', 
+                        title='Plot of trajectory to block'
+                        )
+    fig.write_image('trajectory.png')
     writer.close()
 
 
@@ -109,8 +108,6 @@ def watch_trajectory():
         use_object_obs=True,                    
         horizon = args.horizon, 
         reward_shaping=False,
-        placement_initializer = maybe_randomize_cube_location(args.cube_x_distro, args.cube_y_distro),
-        initialization_noise = maybe_randomize_robot_arm_location(args.enable_arm_randomization, 0.3)             
     )
     obs = env.reset()
     state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
@@ -159,9 +156,9 @@ def evaluate_grip_goal():
         reward_shaping=False,           
     )
     success_count = 0 
+    cumulative_success = []
     for test in range(args.num_trials):
         obs = env.reset()
-        print(env.sim.data.body_xpos[env.cube_body_id])
         state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
         state = np.append(obs['robot0_robot-state'],obs['object-state'])
         agent = set_agent(state_dim, env, args)
@@ -180,9 +177,20 @@ def evaluate_grip_goal():
                 break
 
             state = np.append(obs['robot0_robot-state'],obs['object-state'])
+        
+        cumulative_success.append(success_count)
         if done==True:
             print('The robot failed to grip the block')
 
+    print('Creating success fig...')
+    fig=go.Figure()
+    fig.add_trace(go.Scatter(name='actual_success_rate',x=[i for i in range(args.num_trials)],y=cumulative_success))
+    fig.add_trace(go.Scatter(name='max_success_rate',x=[i for i in range(args.num_trials)],y=[i+1 for i in range(args.num_trials)]))
+    fig.update_layout(template='plotly_white', 
+                        title='Grasp Success Rate',
+                        xaxis=dict(title='evaluation step'),
+                        yaxis=dict(title='num. successes'))
+    fig.write_image('grasp_success_rate.png')
     print(success_count/args.num_trials)
 
 
@@ -197,7 +205,8 @@ def evaluate_lift_goal():
         horizon = args.horizon, 
         reward_shaping=False,                
     )
-    success_count = 0 
+    success_count = 0
+    cumulative_success = [] 
     for test in range(args.num_trials):
         obs = env.reset()
         state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
@@ -218,9 +227,19 @@ def evaluate_lift_goal():
                 break
 
             state = np.append(obs['robot0_robot-state'],obs['object-state'])
+        cumulative_success.append(success_count)
         if done==True:
             print('The robot failed to lift the block')
 
+    print('Creating success fig...')
+    fig=go.Figure()
+    fig.add_trace(go.Scatter(name='actual_success_rate',x=[i for i in range(args.num_trials)],y=cumulative_success))
+    fig.add_trace(go.Scatter(name='max_success_rate',x=[i for i in range(args.num_trials)],y=[i+1 for i in range(args.num_trials)]))
+    fig.update_layout(template='plotly_white', 
+                        title='Lift Success Rate',
+                        xaxis=dict(title='evaluation step'),
+                        yaxis=dict(title='num. successes'))
+    fig.write_image('lift_success_rate.png')
     print(success_count/args.num_trials)
 
 
