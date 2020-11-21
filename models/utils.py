@@ -11,6 +11,8 @@ import copy
 import torch
 from torch.autograd import Variable
 
+from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
+
 class ReplayBuffer:
     '''
     Implementation of basic replay buffer using deque.

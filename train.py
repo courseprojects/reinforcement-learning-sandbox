@@ -110,6 +110,12 @@ if __name__ == "__main__":
     parser.add_argument('--epsilon', type=float, default=10000)
     parser.add_argument('--warmup', type=int, default=100)
     parser.add_argument('--theta', type=int, default=0.15)
+    parser.add_argument('--cube_x_distro', type=list, default=[-0.3, 0.3],
+                        help='x distribution for cube location')
+    parser.add_argument('--cube_y_distro', type=list, default=[-0.3, 0.3],
+                        help='y distribution for cube location')
+    parser.add_argument('--enable_arm_randomization', type=bool, default=False,
+                        help='enable arm randomization (uniform) for each of the 7 joints')
     parser.add_argument('--gamma', type=float, default=0.99,
                         help='discount factor for reward (default: 0.99)')
     parser.add_argument('--num_epochs',type=int, default=500,
@@ -126,12 +132,7 @@ if __name__ == "__main__":
                         help='name of run')
     parser.add_argument('--wandb_entity', type=str, default='peterdavidfagan', metavar='N',
                         help='name of user running experiment')
-    parser.add_argument('--cube_x_distro', type=list, default=[-0.3, 0.3],
-                        help='x distribution for cube location')
-    parser.add_argument('--cube_y_distro', type=list, default=[-0.3, 0.3],
-                        help='y distribution for cube location')
-    parser.add_argument('--enable_arm_randomization', type=bool, default=False,
-                        help='enable arm randomization (uniform) for each of the 7 joints')
+    
     args = parser.parse_args()
     os.environ['WANDB_API_KEY'] = args.wandb_api
     os.environ['WANDB_PROJECT'] = args.wandb_project
