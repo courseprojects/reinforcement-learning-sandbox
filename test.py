@@ -156,13 +156,12 @@ def evaluate_grip_goal():
         use_camera_obs=False,
         use_object_obs=True,                    
         horizon = args.horizon, 
-        reward_shaping=False,
-        placement_initializer = maybe_randomize_cube_location(args.cube_x_distro, args.cube_y_distro),
-        initialization_noise = maybe_randomize_robot_arm_location(args.enable_arm_randomization, 0.3)            
+        reward_shaping=False,           
     )
     success_count = 0 
     for test in range(args.num_trials):
         obs = env.reset()
+        print(env.sim.data.body_xpos[env.cube_body_id])
         state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
         state = np.append(obs['robot0_robot-state'],obs['object-state'])
         agent = set_agent(state_dim, env, args)
@@ -196,9 +195,7 @@ def evaluate_lift_goal():
         use_camera_obs=False,
         use_object_obs=True,                    
         horizon = args.horizon, 
-        reward_shaping=False,
-        placement_initializer = maybe_randomize_cube_location(args.cube_x_distro, args.cube_y_distro),
-        initialization_noise = maybe_randomize_robot_arm_location(args.enable_arm_randomization, 0.3)                
+        reward_shaping=False,                
     )
     success_count = 0 
     for test in range(args.num_trials):
