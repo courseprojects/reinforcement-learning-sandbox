@@ -9,10 +9,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+from models.utils import *
 from models.REINFORCE import REINFORCE
 from models.DDPG import DDPG
-from models.utils import maybe_randomize_cube_location
-from models.utils import maybe_randomize_robot_arm_location
 
 
 
@@ -110,9 +109,9 @@ if __name__ == "__main__":
     parser.add_argument('--epsilon', type=float, default=10000)
     parser.add_argument('--warmup', type=int, default=100)
     parser.add_argument('--theta', type=int, default=0.15)
-    parser.add_argument('--cube_x_distro', type=list, default=[-0.3, 0.3],
+    parser.add_argument('--cube_x_distro',type=float, nargs='+', default=[0, 0],
                         help='x distribution for cube location')
-    parser.add_argument('--cube_y_distro', type=list, default=[-0.3, 0.3],
+    parser.add_argument('--cube_y_distro',type=float,  nargs='+', default=[0, 0],
                         help='y distribution for cube location')
     parser.add_argument('--enable_arm_randomization', type=bool, default=False,
                         help='enable arm randomization (uniform) for each of the 7 joints')
