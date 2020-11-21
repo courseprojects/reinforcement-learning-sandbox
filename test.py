@@ -142,7 +142,6 @@ def check_grip(env):
     else:
         return False
 
-
 def evaluate_grip_goal():
     env = suite.make(
         env_name=args.env_name,
@@ -177,6 +176,44 @@ def evaluate_grip_goal():
             state = np.append(obs['robot0_robot-state'],obs['object-state'])
         if done==True:
             print('The robot failed to grip the block')
+
+    print(success_count/args.num_trials)
+
+
+def evaluate_lift_goal():
+    env = suite.make(
+        env_name=args.env_name,
+        robots=args.robot,
+        has_renderer=False,
+        has_offscreen_renderer=False,
+        use_camera_obs=False,
+        use_object_obs=True,                    
+        horizon = args.horizon, 
+        reward_shaping=False                
+    )
+    success_count = 0 
+    for test in range(args.num_trials):
+        obs = env.reset()
+        state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
+        state = np.append(obs['robot0_robot-state'],obs['object-state'])
+        agent = set_agent(state_dim, env, args)
+
+        # Visualize a single run
+        done=False
+        while done==False: 
+            if args.algo=='REINFORCE':
+                action, log_prob = agent.select_action(state)
+            else:
+                action = agent.select_action(state)           
+            obs, reward, done, info = env.step(action)
+            if env._check_success():
+                success_count+=1
+                print('The robot succeded in lifting the block')
+                break
+
+            state = np.append(obs['robot0_robot-state'],obs['object-state'])
+        if done==True:
+            print('The robot failed to lift the block')
 
     print(success_count/args.num_trials)
 
@@ -222,6 +259,8 @@ if __name__ == "__main__":
         create_media()
     elif args.test_cat=='evaluate_grip':
         evaluate_grip_goal()
+    elif args.test_cat=='evaluate_lift':
+        evaluate_lift_goal()
     else:
         sys.exit('Incorrect test specification.')
 
