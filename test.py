@@ -3,6 +3,7 @@ import numpy as np
 import robosuite as suite
 import wandb
 import imageio
+import plotly.graph_objects as go
 
 import torch
 import torch.nn as nn
@@ -27,9 +28,10 @@ def set_agent(state_dim, env, args):
         sys.exit('Incorrect algorithms specification. Please check the algorithm argument provided.')
 
 
-def create_video():
+def create_media():
     '''This function is taken from the robosuite repository demo folder.'''
     # initialize an environment with offscreen renderer
+    # requires kaleido
     env = suite.make(
         args.env_name,
         args.robot,
@@ -52,14 +54,17 @@ def create_video():
     writer = imageio.get_writer(args.video_path, fps=20)
 
     frames = []
+    trajectory = []
+    cube_pos = []
     for i in range(args.horizon):
         if args.algo=='REINFORCE':
             action, log_prob = agent.select_action(state)
         else:
-            action = agent.select_action(state)           
+            action = agent.select_action(state)  
+        cube_pos.append(env.sim.data.body_xpos[env.cube_body_id])
+        trajectory.append(list(env.sim.data.site_xpos[env.robots[0].eef_site_id]))
         obs, reward, done, info = env.step(action)
         state = np.append(obs['robot0_robot-state'],obs['object-state'])
-
         # dump a frame from every K frames
         if i % args.skip_frame == 0:
             frame = obs[args.camera + "_image"][::-1]
@@ -68,7 +73,16 @@ def create_video():
 
         if done:
             break
-
+    fig=go.Figure()
+    fig.add_trace(go.Scatter3d(x=[x[0] for x in trajectory],y=[x[1] for x in trajectory],z=[x[2] for x in trajectory]))
+    fig.add_trace(go.Scatter3d(x=[cube_pos[0][0]],y=[cube_pos[0][1]],z=[cube_pos[0][2]],
+                                marker=dict(
+                                size=20,
+                                symbol='square',
+                            )))
+    fig.update_layout()
+    fig.show()
+    fig.write_image('plot.png')
     writer.close()
 
 def watch_trajectory():
@@ -98,6 +112,7 @@ def watch_trajectory():
         obs, reward, done, info = env.step(action)
         state = np.append(obs['robot0_robot-state'],obs['object-state'])
         env.render()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch robot arm testing script')
@@ -132,4 +147,4 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     #watch_trajectory()
-    create_video()
+    create_media()
