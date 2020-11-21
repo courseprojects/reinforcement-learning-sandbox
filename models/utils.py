@@ -285,6 +285,7 @@ for the cube
 def maybe_randomize_cube_location(x_distro = None, y_distro = None):
     if x_distro is None or y_distro is None or len(x_distro) != 2 or len(y_distro) != 2:
         return None
+    print("Enabling cube location randomization x: {}, y: {}".format(x_distro, y_distro))
     return UniformRandomSampler(
                 x_range=x_distro,
                 y_range=y_distro,
@@ -293,3 +294,49 @@ def maybe_randomize_cube_location(x_distro = None, y_distro = None):
                 z_offset=0.01,
             )
     
+'''
+Maybe return a uniform distribution for random initialization of the robot arm location. This randomizes
+location for each of the 7 joint locations
+https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/environments/lift.py#L39
+
+this sets the initialization_noise in robosuite suite.make() key
+:param random_location: if true, allow random robot location
+:param magnitude: magnitude of the uniform randomization
+'''
+def maybe_randomize_robot_arm_location(random_location = False, magnitude = 0.2):
+    if not random_location:
+        print("Robot arm initialize location NOT randomized")
+        return 'default'
+    
+    init_noise = [
+        {
+            'magnitude': magnitude,
+            'type': 'uniform'
+        },
+        {
+            'magnitude': magnitude,
+            'type': 'uniform'
+        },
+            {
+            'magnitude': magnitude,
+            'type': 'uniform'
+        },
+            {
+            'magnitude': magnitude,
+            'type': 'uniform'
+        },
+            {
+            'magnitude': magnitude,
+            'type': 'uniform'
+        },
+            {
+            'magnitude': magnitude,
+            'type': 'uniform'
+        },
+            {
+            'magnitude': 0.1,
+            'type': 'uniform'
+        },  
+    ]
+    print("Robot arm initialize location randomized with distribution {}".format(init_noise))
+    return init_noise
