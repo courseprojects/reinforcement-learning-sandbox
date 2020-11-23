@@ -23,7 +23,7 @@ In future versions, we will be building upon the current implementations with th
 A <a href="http://mujoco.org/">MuJoCo</a> license is needed to create this simulation enviornment. For more information on getting a license please visit the this <a href="https://www.roboti.us/license.html">link</a>.
 </p>
 
-<H1>Setting up training enviornment<H1>
+<H1>Setting up training enviornment</H1>
 <p>
 To simplify the creation of the training enviorment we use Docker. You may find the Dockerfile used to build the container for the simulated environment in /Docker/Dockerfile. From here you will need to place your MuJoCo key in the same directory as the one you are building your docker container in. Given this is complete you may simply run the following command
 </p>
@@ -34,7 +34,7 @@ $ docker exec -t robosuite bash
  <p>
  This will provide you with access to the Docker container within which you will have all of the necessary dependencies installed to get started (given you placed the MuJoCo key in the same directory your container was built). 
  </p>
-<H1>Model Training<H1>
+<H1>Model Training</H1>
 In order to track our model training we used <a href="https://www.wandb.com/">Weights and Biases</a>. Weights and biases enabled us to perform hyperparameter sweeps while storing all the necessary results. You can find our repo <a href="https://wandb.ai/peterdavidfagan/cs221-project">here</a>
   
 <H1>Further</H1>
