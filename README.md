@@ -39,5 +39,5 @@ In order to track our model training we used <a href="https://www.wandb.com/">We
   
 <H1>Further</H1>
 <p>
-Feel free to check out our <a href="https://peterdavidfagan.gitbook.io/peter-david-fagan/">docs</a> for further details.
+Feel free to check out our <a href="https://peterdavidfagan.gitbook.io/peter-david-fagan/robot-arm">docs</a> for further details.
 </p>
