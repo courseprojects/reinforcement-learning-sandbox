@@ -9,6 +9,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+import ray
+
 from models.utils import *
 from models.REINFORCE import REINFORCE
 from models.DDPG import DDPG
@@ -139,6 +141,7 @@ if __name__ == "__main__":
     os.environ['ENTITY'] = args.wandb_entity
 
     wandb.init(config=vars(args))
+    ray.init(address="auto")
     
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
