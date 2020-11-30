@@ -17,12 +17,12 @@ instances create "thor" \
 --boot-disk-device-name "thor"  \
 
 
-# cpu
-gcloud compute \
---project "" \
-instances create "thor-cpu" \
---zone "europe-west1-d" \
---machine-type "n2-highmem-2" \
---boot-disk-size "500" \
---boot-disk-type "pd-standard" \
---boot-disk-device-name "thor-cpu"  \
+# # cpu
+# gcloud compute \
+# --project "" \
+# instances create "thor-cpu" \
+# --zone "europe-west1-d" \
+# --machine-type "n2-highmem-2" \
+# --boot-disk-size "500" \
+# --boot-disk-type "pd-standard" \
+# --boot-disk-device-name "thor-cpu"  \
