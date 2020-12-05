@@ -58,3 +58,5 @@ RUN curl -o /usr/local/bin/patchelf https://s3-us-west-2.amazonaws.com/openai-sc
 WORKDIR ./root
 COPY ./requirements.txt /root/requirements.txt
 RUN pip install --no-cache-dir -r ./requirements.txt
+# Required as ray does not yet directly recognize local modules
+RUN pip install git+https://github.com/peterdavidfagan/CS221-Project.git
