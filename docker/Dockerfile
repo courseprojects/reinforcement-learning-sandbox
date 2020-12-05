@@ -1,5 +1,5 @@
-# Set the base image to ubuntu:latest
-FROM nvidia/cuda@sha256:4df157f2afde1cb6077a191104ab134ed4b2fd62927f27b69d788e8e79a45fa1
+# Set the base image
+FROM rayproject/ray:latest
 
 # Author and Maintainer 
 MAINTAINER pfagan@stanford.edu
@@ -45,7 +45,7 @@ RUN DEBIAN_FRONTEND=noninteractive add-apt-repository --yes ppa:deadsnakes/ppa &
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes python3.6-dev python3.6 python3-pip
 RUN virtualenv --python=python3.6 env
 
-RUN rm /usr/bin/python
+#RUN rm /usr/bin/python
 RUN ln -s /env/bin/python3.6 /usr/bin/python
 RUN ln -s /env/bin/pip3.6 /usr/bin/pip
 RUN ln -s /env/bin/pytest /usr/bin/pytest
@@ -58,4 +58,3 @@ RUN curl -o /usr/local/bin/patchelf https://s3-us-west-2.amazonaws.com/openai-sc
 WORKDIR ./root
 COPY ./requirements.txt /root/requirements.txt
 RUN pip install --no-cache-dir -r ./requirements.txt
-

@@ -121,11 +121,11 @@ if __name__ == "__main__":
                         help='discount factor for reward (default: 0.99)')
     parser.add_argument('--num_epochs',type=int, default=500,
                         help='number of epochs to train on' )
-    parser.add_argument('--num_episodes', type=int, default=500,
+    parser.add_argument('--num_episodes', type=int, default=1,
                         help='number of episodes per epoch')
-    parser.add_argument('--horizon', type=int, default=200,
+    parser.add_argument('--horizon', type=int, default=20,
                         help='max episode length (default: 200)')
-    parser.add_argument('--wandb_api', type=str, default='fe24b1f8772e8e3ff1d90417d2ef92e3928414a8', 
+    parser.add_argument('--wandb_api', type=str, default=None, 
                         help='wandb api key')
     parser.add_argument('--wandb_project', type=str, default='cs221-project',
                         help='wandb project name')
@@ -140,7 +140,8 @@ if __name__ == "__main__":
     os.environ['WANDB_NAME'] =  args.wandb_name
     os.environ['ENTITY'] = args.wandb_entity
 
-    wandb.init(config=vars(args))
+    if args.wandb_api not None:
+        wandb.init(config=vars(args))
     ray.init(address="auto")
     
 
