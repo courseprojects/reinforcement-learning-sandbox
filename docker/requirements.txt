@@ -8,3 +8,4 @@ jupyter
 torch
 robosuite
 wandb
+roboray

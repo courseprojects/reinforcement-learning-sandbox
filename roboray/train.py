@@ -48,7 +48,9 @@ def train_reinforce(env_name='Lift', robot='Panda',has_renderer=False,
     env = create_env()
     obs = env.reset()
     state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
-    agent = REINFORCE(state_dim, env.action_dim, gamma, lr, num_episodes, horizon, hidden_size)
+    agent = REINFORCE(state_dim, env.action_dim, 
+                    gamma, lr, num_episodes, 
+                    horizon, hidden_size)
     for epoch in range(num_epochs):
         log_probs = [[] for i in range(num_episodes)]
         rewards = [[] for i in range(num_episodes)]
@@ -88,6 +90,8 @@ def train_ddpg(env_name='Lift', robot='Panda',has_renderer=False,
     wandb_project = kwargs.get('wandb_project',None)
     wandb_name =  kwargs.get('wandb_name',None)
     wandb_entity = kwargs.get('wandb_entity',None)
+    if wandb_api is not None:
+        wandb.init(config={'lr_actor':lr_actor})
 
     env = create_env()
     obs = env.reset()
