@@ -12,7 +12,7 @@ import torch.distributions as dist
 from torch.autograd import Variable
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-from models.utils import * 
+from roboray.models.utils import *
 
 
 class DDPGActor(nn.Module):
