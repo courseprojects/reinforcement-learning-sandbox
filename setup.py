@@ -11,17 +11,17 @@ setup(
     packages=['roboray'],
     python_requires='>=3.5',
     install_requires=[
-    	glfw>=1.4.0
-		numpy>=1.13.3
-		Cython>=0.27.2
-		imageio>=2.1.2
-		cffi>=1.10
-		fasteners~=0.15
-		jupyter
-		torch
-		robosuite
-		wandb
-    ]
+    	'glfw>=1.4.0',
+		'numpy>=1.13.3',
+		'Cython>=0.27.2',
+		'imageio>=2.1.2',
+		'cffi>=1.10',
+		'fasteners~=0.15',
+		'jupyter',
+		'torch',
+		'robosuite',
+		'wandb'
+    ],
     entry_points = {
     	'console_scripts':['roboray-train=roboray.cli:main']
     }
