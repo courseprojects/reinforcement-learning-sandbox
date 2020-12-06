@@ -10,7 +10,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 import ray
-import roboray.models as M
+from roboray.models.REINFORCE import REINFORCE
+from roboray.models.DDPG import DDPG
 
 
 def create_env(env_name='Lift', robot='Panda',has_renderer=False,
@@ -25,7 +26,7 @@ def create_env(env_name='Lift', robot='Panda',has_renderer=False,
         use_camera_obs=use_camera_obs,
         use_object_obs=use_object_obs,                    
         horizon = horizon, 
-        reward_shaping= dense_rewards,
+        reward_shaping=reward_shaping,
     )
 
     return env
@@ -34,19 +35,24 @@ def create_env(env_name='Lift', robot='Panda',has_renderer=False,
 def train_reinforce(env_name='Lift', robot='Panda',has_renderer=False,
                 has_offscreen_renderer=False, use_camera_obs=False,
                 use_object_obs=True, horizon=200, reward_shaping=True,
-                gamma=0.99, lr=0.001, num_episodes=500, hidden_size=300, 
+                gamma=0.99, lr=0.001, num_epochs=500, num_episodes=500, hidden_size=300, 
                 **kwargs):
     '''
     This function trains our REINFORCE implementation.
     '''
+    wandb_api = kwargs.get('wandb_api',None)
+    wandb_project = kwargs.get('wandb_project',None)
+    wandb_name =  kwargs.get('wandb_name',None)
+    wandb_entity = kwargs.get('wandb_entity',None)
+
     env = create_env()
     obs = env.reset()
     state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
-    agent = M.REINFORCE(state_dim, env.action_dim, args.gamma, args.lr, args.num_episodes, horizon, args.hidden_size)
-    for epoch in range(args.num_epochs):
-        log_probs = [[] for i in range(args.num_episodes)]
-        rewards = [[] for i in range(args.num_episodes)]
-        for episode in range(args.num_episodes):
+    agent = REINFORCE(state_dim, env.action_dim, gamma, lr, num_episodes, horizon, hidden_size)
+    for epoch in range(num_epochs):
+        log_probs = [[] for i in range(num_episodes)]
+        rewards = [[] for i in range(num_episodes)]
+        for episode in range(num_episodes):
             obs=env.reset()
             done=False
             while done==False:
@@ -59,36 +65,46 @@ def train_reinforce(env_name='Lift', robot='Panda',has_renderer=False,
                 
         agent.epoch_update_parameters(rewards, log_probs)
         print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards,axis=1).mean()))
-        wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
+        if wandb.api is not None:
+            wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
 
         if epoch%20==0:
             print('Saving model ...')
-            torch.save(agent.model,'{}.pt'.format(args.wandb_name))
-            wandb.save('{}.pkl'.format(args.wandb_name))
+            torch.save(agent.model,'{}.pt'.format(wandb_name))
+            if wandb.api is not None:
+                wandb.save('{}.pt'.format(wandb_name))
 
 
 def train_ddpg(env_name='Lift', robot='Panda',has_renderer=False,
                 has_offscreen_renderer=False, use_camera_obs=False,
                 use_object_obs=True, horizon=200, reward_shaping=True,
-                gamma=0.99, lr=0.001, num_episodes=500, hidden_size=300, 
-                **kwargs):
+                gamma=0.99, lr_actor=0.001, lr_critic=0.001, tau=0.001,
+                epsilon=10000, batch_size=64, max_mem_size=500000,enable_her=False,
+                num_epochs=500 ,num_episodes=500, hidden_size=300, warmup=100 , **kwargs):
     '''
     This function trains our DDPG and DDPG+HER implementations.
     '''
+    wandb_api = kwargs.get('wandb_api',None)
+    wandb_project = kwargs.get('wandb_project',None)
+    wandb_name =  kwargs.get('wandb_name',None)
+    wandb_entity = kwargs.get('wandb_entity',None)
+
     env = create_env()
     obs = env.reset()
     state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
-    agent = M.DDPG(state_dim, env.action_dim, env, args)
+    agent = DDPG(state_dim, env.action_dim, env, hidden_size, 
+                lr_actor, lr_critic, tau, gamma, epsilon, batch_size, 
+                max_mem_size,enable_her)
     iteration = 0
-    for epoch in range(args.num_epochs):
-        rewards = [[] for i in range(args.num_episodes)]
-        for episode in range(args.num_episodes):
+    for epoch in range(num_epochs):
+        rewards = [[] for i in range(num_episodes)]
+        for episode in range(num_episodes):
             obs = env.reset()
             state = np.append(obs['robot0_robot-state'],obs['object-state'])
             agent.s_t = state
             done=False
             while done==False: 
-                if iteration <= args.warmup:
+                if iteration <= warmup:
                     action = agent.random_action()
                 else:
                     action = agent.select_action(state)        
@@ -98,26 +114,25 @@ def train_ddpg(env_name='Lift', robot='Panda',has_renderer=False,
                 rewards[episode].append(reward)
                 state = np.append(obs['robot0_robot-state'],obs['object-state'])
                 agent.observe(reward, state, done)
-                # if iteration > args.warmup:
-                #     agent.update_parameters()
-
-
+               
             # Update network weights after warm-up period
-            if iteration > args.warmup:
-                for _ in range(args.horizon):
+            if iteration > warmup:
+                for _ in range(horizon):
                     agent.update_parameters()
 
-        if args.dense_rewards==True:
+        if reward_shaping==True:
             print('Epoch: {}, Average_Rewards: {}'.format(epoch, np.sum(rewards,axis=1).mean()))
-            wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
+            if wandb.api is not None:
+                wandb.log({'epoch_reward': np.sum(rewards,axis=1).mean()})
         else:
             pass
             #implement tracking of sparse rewards here
 
         # Save models 
         if epoch%20==0:
-            torch.save(agent.actor,'{}_{}.pt'.format(args.algo, epoch))
-            wandb.save('{}_{}.pt'.format(args.algo, epoch))
+            torch.save(agent.actor,'DDPG_{}.pt'.format(epoch))
+            if wandb.api is not None:
+                wandb.save('DDPG_{}.pt'.format(epoch))
 
 
 

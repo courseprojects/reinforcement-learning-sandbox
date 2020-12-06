@@ -86,37 +86,38 @@ class DDPG:
     :param
     '''
 
-    def __init__(self, state_dim, action_dim, env, args):
+    def __init__(self, state_dim, action_dim, env, hidden_size, 
+                lr_actor, lr_critic, tau, gamma,epsilon, batch_size, 
+                max_mem_size,enable_her):
 
         self.state_dim = state_dim
         self.action_dim = action_dim
 
-        self.actor = DDPGActor(state_dim, action_dim, args.hidden_size)
-        self.actor_target = DDPGActor(state_dim, action_dim, args.hidden_size)
-        self.actor_optim = optim.Adam(self.actor.parameters(), lr=args.lr_actor)
+        self.actor = DDPGActor(state_dim, action_dim, hidden_size)
+        self.actor_target = DDPGActor(state_dim, action_dim, hidden_size)
+        self.actor_optim = optim.Adam(self.actor.parameters(), lr=lr_actor)
 
-        self.critic = DDPGCritic(state_dim, action_dim, args.hidden_size)
-        self.critic_target = DDPGCritic(state_dim, action_dim, args.hidden_size)
-        self.critic_optim = optim.Adam(self.critic.parameters(), lr=args.lr_critic)
+        self.critic = DDPGCritic(state_dim, action_dim, hidden_size)
+        self.critic_target = DDPGCritic(state_dim, action_dim, hidden_size)
+        self.critic_optim = optim.Adam(self.critic.parameters(), lr=lr_critic)
         self.criterion = nn.MSELoss()
         self.env = env
 
         hard_update(self.actor_target, self.actor)
         hard_update(self.critic_target, self.critic)
 
-        self.max_mem_size = args.max_mem_size
-        self.memory = ReplayBufferWithHindsight(ReplayBuffer(args.max_mem_size), args.enable_her, Lift_reward_func1, self.env)
+        self.max_mem_size = max_mem_size
+        self.memory = ReplayBufferWithHindsight(ReplayBuffer(max_mem_size), enable_her, Lift_reward_func1, self.env)
 
         self.random_process = OUActionNoise(mu=np.zeros(action_dim))
 
-        self.tau = args.tau
-        self.batch_size = args.batch_size
-        self.lr = args.lr
-        self.lr_actor = args.lr_actor
-        self.lr_critic = args.lr_critic
-        self.gamma = args.gamma
+        self.tau = tau
+        self.batch_size = batch_size
+        self.lr_actor = lr_actor
+        self.lr_critic = lr_critic
+        self.gamma = gamma
         self.epsilon = 1.0
-        self.depsilon = 1.0 / args.epsilon
+        self.depsilon = 1.0 / epsilon
 
         self.s_t = None
         self.a_t = None

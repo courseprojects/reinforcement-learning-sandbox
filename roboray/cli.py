@@ -11,6 +11,9 @@ import torch.optim as optim
 
 import ray
 import roboray.models as M
+from roboray.train import train_reinforce
+from roboray.train import train_ddpg
+
 
 def main():
 	parser = argparse.ArgumentParser(description='PyTorch robot arm training script')
@@ -60,7 +63,7 @@ def main():
 
 	if args.wandb_api is not None:
 	    wandb.init(config=vars(args))
-	ray.init(address="auto")
+	#ray.init(address="auto")
 
 
 	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -75,9 +78,7 @@ def main():
 	    use_object_obs=True,                    
 	    horizon = args.horizon, 
 	    reward_shaping=args.dense_rewards,
-	    placement_initializer = maybe_randomize_cube_location(args.cube_x_distro, args.cube_y_distro),
-	    initialization_noise = maybe_randomize_robot_arm_location(args.enable_arm_randomization, 0.3)     
-	)
+	    )
 
 	obs = env.reset()
 	state_dim = obs['robot0_robot-state'].shape[0]+obs['object-state'].shape[0]
@@ -85,10 +86,10 @@ def main():
 	# Setting algorithm according to args
 	if args.algo == 'REINFORCE':
 	    print('Starting to train REINFORCE...')
-	    M.train_reinforce()
+	    train_reinforce()
 	elif args.algo == 'DDPG':
 	    print('Starting to train DDPG')
-	    M.train_ddpg()        
+	    train_ddpg()        
 	else:
 	    sys.exit('Incorrect algorithms specification. Please check the algorithm argument provided.')
 
