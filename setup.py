@@ -4,7 +4,7 @@ setup(
     name='roboray',
     version='0.1.0',    
     description='Package for running robosuite with ray',
-    url='https://github.com/peterdavidfagan/CS221-Project'
+    url='https://github.com/peterdavidfagan/CS221-Project',
     author='Peter David Fagan',
     author_email='pfagan@stanford.edu',
     license='MIT',
