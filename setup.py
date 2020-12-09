@@ -29,6 +29,6 @@ setup(
 		'wandb'
     ],
     entry_points = {
-    	'console_scripts':['roboray-train=roboray.cli:main']
+    	'console_scripts':['roboray-train=roboray.cli.cli_temp:main']
     }
 )

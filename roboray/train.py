@@ -10,8 +10,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 import ray
-from roboray.models.REINFORCE import REINFORCE
-from roboray.models.DDPG import DDPG
+from roboray.models.REINFORCE.REINFORCE import REINFORCE
+from roboray.models.DDPG.DDPG import DDPG
 
 
 def create_env(env_name='Lift', robot='Panda',has_renderer=False,

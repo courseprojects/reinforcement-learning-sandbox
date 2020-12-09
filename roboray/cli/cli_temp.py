@@ -1,3 +1,6 @@
+# This script needs to be updated to use click instead 
+# of argparse.
+
 import argparse, math, os, sys
 from copy import deepcopy
 import numpy as np

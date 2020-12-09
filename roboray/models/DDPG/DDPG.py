@@ -1,5 +1,6 @@
 # Implementation of DDPG algorithm with inspiration from 
 # "https://github.com/ghliu/pytorch-ddpg/blob/master/ddpg.py"
+
 import robosuite as suite
 import numpy as np
 import math
@@ -12,7 +13,7 @@ import torch.distributions as dist
 from torch.autograd import Variable
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-from roboray.models.utils import *
+from roboray.utils.ddpg_utils import *
 
 
 class DDPGActor(nn.Module):
