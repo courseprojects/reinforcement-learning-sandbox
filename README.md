@@ -1,6 +1,5 @@
 # CS221-Project
 <p float="left">
-  <img src="assets/Stanford-Logo.png" width="500">
   <img src="assets/robotarmfull.png" width="300">
  </p>
  <H1>Introduction</H1>
