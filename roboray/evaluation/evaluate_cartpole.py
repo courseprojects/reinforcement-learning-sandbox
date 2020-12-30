@@ -37,7 +37,7 @@ def train_cartpole(agent, env, num_epochs, num_episodes, episode_horizon, warmup
 			done=False
 			steps = 0
 			while (done==False) | (steps<=episode_horizon): 
-				action = agent.action_high * agent.select_action(obs)  # Scale to match largest action      
+				action = agent.select_action(obs)     
 				obs, reward, done, info = env.step(action)
 				steps += 1
 				epoch_reward+=reward
