@@ -19,8 +19,6 @@ from roboray.utils.ddpg_utils import *
 class DDPGActor(nn.Module):
     '''
     Pytorch neural network for Actor model
-
-    :param 
     '''
 
     def __init__(self, state_dim, action_dim, hidden_size, init_w=3e-3):
@@ -50,8 +48,6 @@ class DDPGActor(nn.Module):
 class DDPGCritic(nn.Module):
     '''
     Pytorch neural network for critic model
-
-    :param 
     '''
 
     def __init__(self, state_dim, action_dim, hidden_size, init_w=3e-3):
@@ -83,16 +79,18 @@ class DDPG:
     '''
     Implementation of Deep Deterministic Policy Gradient according to 
     https://arxiv.org/pdf/1509.02971.pdf
-
-    :param
     '''
 
-    def __init__(self, state_dim, action_dim, env, hidden_size, 
-                lr_actor, lr_critic, tau, gamma,epsilon, batch_size, 
-                max_mem_size,enable_her):
+    def __init__(self, state_dim, action_dim, action_high,
+                action_low, hidden_size, lr_actor, 
+                lr_critic, tau, gamma,eps, decay_eps, 
+                batch_size, max_mem_size):
 
+        self.name = "DDPG Agent"   # Used for logging purposes
         self.state_dim = state_dim
         self.action_dim = action_dim
+        self.action_high = action_high 
+        self.action_low = action_low
 
         self.actor = DDPGActor(state_dim, action_dim, hidden_size)
         self.actor_target = DDPGActor(state_dim, action_dim, hidden_size)
@@ -102,23 +100,22 @@ class DDPG:
         self.critic_target = DDPGCritic(state_dim, action_dim, hidden_size)
         self.critic_optim = optim.Adam(self.critic.parameters(), lr=lr_critic)
         self.criterion = nn.MSELoss()
-        self.env = env
 
         hard_update(self.actor_target, self.actor)
         hard_update(self.critic_target, self.critic)
 
         self.max_mem_size = max_mem_size
-        self.memory = ReplayBufferWithHindsight(ReplayBuffer(max_mem_size), enable_her, Lift_reward_func1, self.env)
+        self.memory = ReplayBuffer(max_mem_size)
 
-        self.random_process = OUActionNoise(mu=np.zeros(action_dim))
+        self.random_process = OUActionNoise(mu=np.zeros(action_dim))   # Generate random noise centered around zero.
 
         self.tau = tau
         self.batch_size = batch_size
         self.lr_actor = lr_actor
         self.lr_critic = lr_critic
         self.gamma = gamma
-        self.epsilon = 1.0
-        self.depsilon = 1.0 / epsilon
+        self.eps = eps 
+        self.decay_eps = decay_eps
 
         self.s_t = None
         self.a_t = None
@@ -131,23 +128,24 @@ class DDPG:
             self.s_t = s_t1
 
 
-    def select_action(self, state, decay_epsilon=True):
+    def select_action(self, state):
         self.actor.eval()
         action = self.actor(to_tensor(state).to(self.actor.device)).to('cpu').detach().numpy()
-        action += self.is_training*max(self.epsilon, 0)*self.random_process()
-        action = np.clip(action, -1., 1.)
+        action += self.is_training*max(self.eps, 0)*self.random_process()
+        action = np.clip(action, self.action_low, self.action_high)
 
-        if decay_epsilon:
-            self.epsilon -= self.depsilon
-
+        self.eps -= self.decay_eps
         self.actor.train()
         self.a_t = action
         return action
 
+
     def random_action(self):
-        action = np.random.uniform(-1.,1.,self.action_dim)
+        action = np.random.uniform(self.action_low, self.action_high,\
+                                    self.action_dim)
         self.a_t = action
         return action
+
 
     def update_parameters(self):
         # Sample batch from replay buffer
@@ -157,7 +155,7 @@ class DDPG:
         action_batch = to_tensor(action_batch).to(device)
         reward_batch = to_tensor(reward_batch).to(device)
         next_state_batch = to_tensor(next_state_batch).to(device)
-        done_batch = to_tensor(done_batch).to(device)
+        done_batch = abs(to_tensor(done_batch) - 1).to(device)   # Need to switch boolean
 
         # Calculate next q-values
         with torch.no_grad():
@@ -165,7 +163,8 @@ class DDPG:
                          self.actor_target(next_state_batch)])
 
             target_q_batch = reward_batch + \
-                self.gamma*q_next   # Need to add details for terminal case
+                self.gamma*q_next*done_batch
+
 
         # Critic update
         self.critic.zero_grad()
@@ -192,6 +191,5 @@ class DDPG:
 
         # Target update
         soft_update(self.actor_target, self.actor, self.tau)
-        soft_update(self.critic_target, self.critic, self.tau)
-        
+        soft_update(self.critic_target, self.critic, self.tau)        
   

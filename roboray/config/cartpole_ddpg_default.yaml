@@ -1,0 +1,21 @@
+training_params:
+  num_epochs: 10
+  num_episodes: 100
+  episode_horizon: 25
+  warmup: 100
+  render: True
+
+ddpg_agent:
+  state_dim: 4
+  action_dim: 1 
+  action_high: 3.
+  action_low: -3.
+  hidden_size: 300 
+  lr_actor: 0.0001 
+  lr_critic: 0.0001 
+  tau: 0.001 
+  gamma: 0.99 
+  eps: 1.0
+  decay_eps: 0.01 
+  batch_size: 64 
+  max_mem_size: 500000

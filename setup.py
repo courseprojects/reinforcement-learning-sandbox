@@ -1,5 +1,6 @@
 from setuptools import setup
 from os import path
+
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
@@ -7,12 +8,12 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 setup(
     name='roboray',
     version='0.3.0',    
-    description='Package for running robosuite with ray',
+    description='Package for testing rl algorithms',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/peterdavidfagan/CS221-Project',
+    url='https://github.com/peterdavidfagan/Roboray',
     author='Peter David Fagan',
-    author_email='pfagan@stanford.edu',
+    author_email='peterdavidfagan@gmail.com',
     license='MIT',
     packages=['roboray'],
     python_requires='>=3.5',
@@ -26,7 +27,8 @@ setup(
 		'jupyter',
 		'torch',
 		'robosuite',
-		'wandb'
+		'wandb',
+        'pyyaml'
     ],
     entry_points = {
     	'console_scripts':['roboray-train=roboray.cli.cli_temp:main']

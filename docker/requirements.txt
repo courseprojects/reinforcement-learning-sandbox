@@ -9,3 +9,5 @@ torch
 robosuite
 wandb
 roboray
+gym
+pyyaml
