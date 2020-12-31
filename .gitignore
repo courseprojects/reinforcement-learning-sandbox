@@ -136,5 +136,5 @@ cython_debug/
 # logs
 log/
 
-# models
-models/
+# model weights
+weights/
