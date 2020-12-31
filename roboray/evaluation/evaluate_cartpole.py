@@ -4,6 +4,9 @@ This module is used to evaluate agents using the cartpole
 gym environment.
 
 """
+import os
+from pathlib import Path
+
 from roboray.agents.DDPG import DDPG
 from roboray.utils.common_utils import load_config, set_logging
 import gym
@@ -36,7 +39,7 @@ def train_cartpole(agent, env, num_epochs, num_episodes, episode_horizon, warmup
 			agent.s_t = obs
 			done=False
 			steps = 0
-			while (done==False) | (steps<=episode_horizon): 
+			while (done==False) & (steps<=episode_horizon): 
 				action = agent.select_action(obs)     
 				obs, reward, done, info = env.step(action)
 				steps += 1
@@ -55,11 +58,16 @@ def train_cartpole(agent, env, num_epochs, num_episodes, episode_horizon, warmup
 
 
 if __name__=="__main__":
+	# Getting path variables
+	roboray_path = str(Path(os.getcwd()).parent)
+	logging_path = roboray_path + "/config/default_logger.conf"
+	cartpole_path = roboray_path + "/config/cartpole_ddpg_default.yaml" 
+
 	# Set logging
-	log = set_logging("/Users/peterfagan/Code/Roboray/roboray/config/default_logger.conf")
+	log = set_logging(logging_path)
 
 	# Read config
-	config = load_config("/Users/peterfagan/Code/Roboray/roboray/config/cartpole_ddpg_default.yaml")
+	config = load_config(cartpole_path)
 	
 
 	# Train cartpole
