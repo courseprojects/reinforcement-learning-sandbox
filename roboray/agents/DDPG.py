@@ -21,8 +21,9 @@ class DDPGActor(nn.Module):
     Pytorch neural network for Actor model
     '''
 
-    def __init__(self, state_dim, action_dim, hidden_size, init_w=3e-3):
+    def __init__(self, state_dim, action_dim, action_bound, hidden_size, init_w=3e-3):
         super(DDPGActor, self).__init__()
+        self.action_bound = action_bound
         self.l1 = nn.Linear(state_dim, hidden_size)
         self.bn1 = nn.LayerNorm(hidden_size)
         self.l2 = nn.Linear(hidden_size, hidden_size)
@@ -41,6 +42,7 @@ class DDPGActor(nn.Module):
         x = F.relu(self.bn1(self.l1(x)))
         x = F.relu(self.bn2(self.l2(x)))
         x = torch.tanh(self.l3(x))
+        x = x*self.action_bound
 
         return x
 
@@ -92,8 +94,8 @@ class DDPG:
         self.action_high = action_high 
         self.action_low = action_low
 
-        self.actor = DDPGActor(state_dim, action_dim, hidden_size)
-        self.actor_target = DDPGActor(state_dim, action_dim, hidden_size)
+        self.actor = DDPGActor(state_dim, action_dim, action_high, hidden_size)
+        self.actor_target = DDPGActor(state_dim, action_dim, action_high, hidden_size)
         self.actor_optim = optim.Adam(self.actor.parameters(), lr=lr_actor)
 
         self.critic = DDPGCritic(state_dim, action_dim, hidden_size)

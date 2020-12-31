@@ -1,7 +1,10 @@
+environment:
+  env_name: InvertedPendulum-v2
+
 training_params:
-  num_epochs: 10
+  num_epochs: 100
   num_episodes: 100
-  episode_horizon: 25
+  episode_horizon: 1000
   warmup: 100
   render: True
 
@@ -13,9 +16,9 @@ ddpg_agent:
   hidden_size: 300 
   lr_actor: 0.0001 
   lr_critic: 0.0001 
-  tau: 0.001 
+  tau: 0.005 
   gamma: 0.99 
-  eps: 1.0
-  decay_eps: 0.01 
+  eps: 2.0
+  decay_eps: 0.0001 
   batch_size: 64 
   max_mem_size: 500000

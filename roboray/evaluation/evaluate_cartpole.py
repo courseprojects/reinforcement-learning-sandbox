@@ -8,8 +8,11 @@ import os
 from pathlib import Path
 
 from roboray.agents.DDPG import DDPG
+from roboray.utils.ddpg_utils import to_tensor
 from roboray.utils.common_utils import load_config, set_logging
 import gym
+
+import torch
 
 
 def train_cartpole(agent, env, num_epochs, num_episodes, episode_horizon, warmup, render):
@@ -47,14 +50,26 @@ def train_cartpole(agent, env, num_epochs, num_episodes, episode_horizon, warmup
 				agent.observe(reward, obs, done)
 				agent.update_parameters()
 		log.info("reward for epoch_{}: {}".format(epoch,epoch_reward/num_episodes))
+		model = "/Users/peterfagan/Code/Roboray/roboray/evaluation/models/model_{}.pt".format(epoch+1)
+		torch.save(agent.actor, model)
+		env_to_wrap = gym.make("InvertedPendulum-v2")
+		render_rollout(env_to_wrap, model,epoch,record=False)
 
 
-	if render == True:
-		obs = env.reset()
-		for _ in range(1000):
-			env.render()
-			obs, reward, done, info = env.step(agent.select_action(obs))
+def render_rollout(env, model, idx, record):
+	if record == True:
+		gym.wrappers.Monitor(env, "/Users/peterfagan/Code/Roboray/roboray/evaluation/recording/recording_{}.mp4".format(idx),force=True)
+	actor = torch.load(model)
+	actor.eval()
+	obs = env.reset()
+	done = False
+	steps = 0
+	while (done==False) & (steps <= 1000):
+		# env.render()
+		# print(actor(to_tensor(obs)).detach())
+		obs, reward, done, info = env.step(actor(to_tensor(obs)).detach())
 
+# Add rendering of all rollouts from training loop
 
 
 if __name__=="__main__":
@@ -71,7 +86,7 @@ if __name__=="__main__":
 	
 
 	# Train cartpole
-	env = gym.make("InvertedPendulum-v2")
+	env = gym.make(config["environment"]["env_name"])
 	agent = DDPG(**config["ddpg_agent"])
 	train_cartpole(agent, env, **config["training_params"])
 
