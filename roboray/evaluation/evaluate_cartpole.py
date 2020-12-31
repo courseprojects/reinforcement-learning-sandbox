@@ -50,7 +50,7 @@ def train_cartpole(agent, env, num_epochs, num_episodes, episode_horizon, warmup
 				agent.observe(reward, obs, done)
 				agent.update_parameters()
 		log.info("reward for epoch_{}: {}".format(epoch,epoch_reward/num_episodes))
-		model = "/Users/peterfagan/Code/Roboray/roboray/evaluation/models/model_{}.pt".format(epoch+1)
+		model = "/Users/peterfagan/Code/Roboray/roboray/evaluation/weights/model_{}.pt".format(epoch+1)
 		torch.save(agent.actor, model)
 		env_to_wrap = gym.make("InvertedPendulum-v2")
 		render_rollout(env_to_wrap, model,epoch,record=False)
