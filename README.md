@@ -10,12 +10,11 @@ Welcome, in this project we train a multiple agents in different simulated envir
 <p>
 The original version of this repository was used as a submission for Stanford's course CS221 Autumn 2020. Subsequently this repository has been converted to be used for multiple different algorithm implementations.:
 </p>
-<ul>
-  <li>[x] REINFORCE</li>
-  <li>[x] Deep Deterministic Policy Gradient</li>
-  <li>[] Soft Actor Critic</li>
-  <li>[] PPO</li>
-  <li>[] Apex DDPG</li>
+-[x] REINFORCE
+-[x] Deep Deterministic Policy Gradient
+-[] Soft Actor Critic
+-[] PPO
+-[] Apex DDPG
 
 </ul>
 
