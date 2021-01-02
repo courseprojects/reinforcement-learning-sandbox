@@ -8,15 +8,14 @@
 Welcome, in this project we train a multiple agents in different simulated environments. The main goal of this repository is to test applications of reinforcement learning to robot control problems but you will find other popular environments included for benchmarking. I leverage the simulation framework <a href="https://github.com/ARISE-Initiative/robosuite">robosuite</a> which is powered by <a href="http://mujoco.org/">MuJoCo</a> for the robot control problems. In future iteration I will consider moving to use the bullet physics engine.  
 </p>
 <p>
-The original version of this repository was used as a submission for Stanford's course CS221 Autumn 2020. Subsequently this repository has been converted to be used for multiple different algorithm implementations.:
-</p>
+The original version of this repository was used as a submission for Stanford's course CS221 Autumn 2020. Subsequently this repository has been converted to be used for multiple different algorithm implementations:
+
 - [x] REINFORCE
 - [x] Deep Deterministic Policy Gradient
-- [] Soft Actor Critic
-- [] PPO
-- [] Apex DDPG
-
-</ul>
+- [ ] Soft Actor Critic
+- [ ] PPO
+- [ ] Apex DDPG
+</p>
 
 <H1>Prerequisites</H1>
 <p>
