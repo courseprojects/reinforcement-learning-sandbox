@@ -1,6 +1,7 @@
 import logging
 import logging.config
 import yaml
+import os
 
 
 def load_config(filepath):
@@ -11,7 +12,8 @@ def load_config(filepath):
 
 
 def set_logging(filepath):
-	os.mkdir("log")
+	if not os.path.exists("log"):
+		os.mkdir("log")
 	logging.config.fileConfig(filepath)
 	log = logging.getLogger("default")
 

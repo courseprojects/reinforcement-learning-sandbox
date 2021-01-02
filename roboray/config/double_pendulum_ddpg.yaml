@@ -6,7 +6,7 @@ training_params:
   num_episodes: 10
   episode_horizon: 1000
   warmup: 100
-  render: True
+  render: False
 
 ddpg_agent:
   state_dim: 11

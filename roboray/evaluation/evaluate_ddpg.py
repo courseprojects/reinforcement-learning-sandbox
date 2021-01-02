@@ -21,7 +21,8 @@ def train(agent, env, num_epochs, num_episodes, episode_horizon, warmup, render)
 	state_dim = env.observation_space.shape[0]
 	iteration = 0
 	log.info("Creating weights folders.")
-	os.mkdir("weights")
+	if not os.path.exists("weights"):
+		os.mkdir("weights")
 	log.info("Environment: {} \n Agent: {}\n".format(env.spec, agent.name))
 	
 
