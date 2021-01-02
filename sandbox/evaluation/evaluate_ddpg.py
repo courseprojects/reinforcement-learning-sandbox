@@ -9,20 +9,26 @@ from pathlib import Path
 from sandbox.agents.DDPG import DDPG
 from sandbox.utils.ddpg_utils import to_tensor
 from sandbox.utils.common_utils import load_config, set_logging
+from sandbox.env.robosuite_lift import GymWrapper
+
+import robosuite as suite
 import gym
 
 import torch
 
 
 def train(agent, env, num_epochs, num_episodes, episode_horizon, warmup, render):
+	"""
+	This function trains a ddpg agent given training parameters provided by config file.
+	"""
 	log.info("Setting up Agent and Environment.")
 	obs = env.reset()
-	state_dim = env.observation_space.shape[0]
 	iteration = 0
 	log.info("Creating weights folders.")
 	if not os.path.exists("weights"):
 		os.mkdir("weights")
-	log.info("Environment: {} \n Agent: {}\n".format(env.spec, agent.name))
+
+	log.info("Environment: {} \n Agent: {}\n".format(config["environment"]["env_name"], agent.name))
 	
 
 	log.info("Commencing Warmup")
@@ -54,40 +60,54 @@ def train(agent, env, num_epochs, num_episodes, episode_horizon, warmup, render)
 		log.info("reward for epoch_{}: {}".format(epoch,epoch_reward/num_episodes))
 		model = "./weights/model_{}.pt".format(epoch+1)
 		torch.save(agent.actor, model)
-		env_to_wrap = gym.make("InvertedDoublePendulum-v2")
+		if config["environment"]["env_source"]=="openai_gym":		
+			env_to_wrap = gym.make(config["environment"]["env_name"])
+		else:
+			env_to_wrap = env
 		if render == True:
 			render_rollout(env_to_wrap, model,epoch,record=False)
 
 
 def render_rollout(env, model, epoch,record):
-	if record == True:
+	"""
+	This function renders a rollout given a certain set of model weights.
+	"""
+	if (record == True) & (config["environment"]["env_source"]=="openai_gym"):
 		gym.wrappers.Monitor(env, model.format(epoch),force=True)
 	actor = torch.load(model.format(epoch))
 	actor.eval()
 	obs = env.reset()
 	done = False
 	steps = 0
-	while (done==False) & (steps <= 1000):
+	while (done==False) & (steps <= config["training_params"]["episode_horizon"]):
 		env.render()
-		obs, reward, done, info = env.step(actor(to_tensor(obs)).detach())
+		action = actor(to_tensor(obs)).detach().numpy()
+		obs, reward, done, info = env.step(action)
+	env.close()
 
-# Add rendering of all rollouts from training loop
 
 
 if __name__=="__main__":
 	# Getting path variables
 	sandbox_path = str(Path(os.getcwd()).parent)
 	logging_path = sandbox_path + "/config/default_logger.conf"
-	double_pendulum_path = sandbox_path + "/config/double_pendulum_ddpg.yaml" 
+	config_path = sandbox_path + "/config/lift_ddpg.yaml" 
 
 	# Set logging
 	log = set_logging(logging_path)
 
 	# Read config
-	config = load_config(double_pendulum_path)
+	config = load_config(config_path)
 	
-
 	# Train cartpole
-	env = gym.make(config["environment"]["env_name"])
+	if config["environment"]["env_source"]=="openai_gym":
+		env = gym.make(config["environment"]["env_name"])
+	elif config["environment"]["env_source"]=="stanford_robosuite":
+		env = suite.make(**config["robosuite_env"])
+		env = GymWrapper(env, keys=config["robosuite_keys"])
+	else:
+		log.info("Error setting the enviroment.")
+
+
 	agent = DDPG(**config["ddpg_agent"])
 	train(agent, env, **config["training_params"])

@@ -1,4 +1,5 @@
 environment:
+  env_source: openai_gym
   env_name: InvertedDoublePendulum-v2
 
 training_params:

@@ -1,4 +1,5 @@
 environment:
+  env_source: openai_gym
   env_name: Pendulum-v0
 
 training_params:
