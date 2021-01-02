@@ -1,6 +1,7 @@
 # Reinforcement Learning Sandbox
 <p float="left">
   <img src="assets/robotarmfull.png" width="300">
+    <img src="assets/openai_pendulum.jpg" width="300" height="320">
  </p>
  <H1>Introduction</H1>
 <p>
