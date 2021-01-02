@@ -6,9 +6,9 @@ This module is used to evaluate the regular DDPG agent on multiple environments
 import os
 from pathlib import Path
 
-from roboray.agents.DDPG import DDPG
-from roboray.utils.ddpg_utils import to_tensor
-from roboray.utils.common_utils import load_config, set_logging
+from sandbox.agents.DDPG import DDPG
+from sandbox.utils.ddpg_utils import to_tensor
+from sandbox.utils.common_utils import load_config, set_logging
 import gym
 
 import torch
@@ -76,9 +76,9 @@ def render_rollout(env, model, epoch,record):
 
 if __name__=="__main__":
 	# Getting path variables
-	roboray_path = str(Path(os.getcwd()).parent)
-	logging_path = roboray_path + "/config/default_logger.conf"
-	double_pendulum_path = roboray_path + "/config/double_pendulum_ddpg.yaml" 
+	sandbox_path = str(Path(os.getcwd()).parent)
+	logging_path = sandbox_path + "/config/default_logger.conf"
+	double_pendulum_path = sandbox_path + "/config/double_pendulum_ddpg.yaml" 
 
 	# Set logging
 	log = set_logging(logging_path)

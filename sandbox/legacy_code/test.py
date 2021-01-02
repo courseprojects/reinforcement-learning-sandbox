@@ -10,9 +10,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from roboray.models.utils import *
-from roboray.models.REINFORCE import REINFORCE
-from roboray.models.DDPG import DDPG
+from sandbox.models.utils import *
+from sandbox.models.REINFORCE import REINFORCE
+from sandbox.models.DDPG import DDPG
 
 
 def set_agent(state_dim, env, args):

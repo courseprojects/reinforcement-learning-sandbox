@@ -13,9 +13,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 import ray
-import roboray.models as M
-from roboray.train import train_reinforce
-from roboray.train import train_ddpg
+import sandbox.models as M
+from sandbox.train import train_reinforce
+from sandbox.train import train_ddpg
 
 
 def main():
