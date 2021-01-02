@@ -1,7 +1,6 @@
 """
 
-This module is used to evaluate agents using the cartpole
-gym environment.
+This module is used to evaluate the regular DDPG agent on multiple environments
 
 """
 import os
