@@ -8,6 +8,5 @@ jupyter
 torch
 robosuite
 wandb
-roboray
 gym
 pyyaml
