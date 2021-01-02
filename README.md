@@ -1,8 +1,7 @@
 # Reinforcement Learning Sandbox
 <p float="left">
   <img src="assets/robotarmfull.png" width="300">
-    <img src="assets/openai_pendulum.jpg" width="300" height="320">
- </p>
+</p>
  <H1>Introduction</H1>
 <p>
 Welcome, in this project we train a multiple agents in different simulated environments. The main goal of this repository is to test applications of reinforcement learning to robot control problems but you will find other popular environments included for benchmarking. I leverage the simulation framework <a href="https://github.com/ARISE-Initiative/robosuite">robosuite</a> which is powered by <a href="http://mujoco.org/">MuJoCo</a> for the robot control problems. In future iteration I will consider moving to use the bullet physics engine.  
