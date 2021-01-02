@@ -11,6 +11,7 @@ def load_config(filepath):
 
 
 def set_logging(filepath):
+	os.mkdir("log")
 	logging.config.fileConfig(filepath)
 	log = logging.getLogger("default")
 
