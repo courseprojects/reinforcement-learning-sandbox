@@ -12,6 +12,10 @@ The original version of this repository was used as a submission for Stanford's 
 <ul>
   <li>[x] REINFORCE</li>
   <li>[x] Deep Deterministic Policy Gradient</li>
+  <li>[] Soft Actor Critic</li>
+  <li>[] PPO</li>
+  <li>[] Apex DDPG</li>
+
 </ul>
 
 <H1>Prerequisites</H1>
