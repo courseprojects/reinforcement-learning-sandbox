@@ -4,10 +4,10 @@
 </p>
  <H1>Introduction</H1>
 <p>
-Welcome, in this project I train a multiple agents in different simulated environments. The main goal of this repository is to test applications of reinforcement learning to robot control problems but you will find other popular environments included for benchmarking. I leverage the simulation framework <a href="https://github.com/ARISE-Initiative/robosuite">robosuite</a> which is powered by <a href="http://mujoco.org/">MuJoCo</a> for the robot control problems. In future iteration I will consider moving to use the bullet physics engine.  
+Welcome, in this project I train a multiple agents in different simulated environments. The main goal of this repository is to test applications of reinforcement learning to robot control problems but you will find other popular environments included for benchmarking. I leverage the simulation framework <a href="https://github.com/ARISE-Initiative/robosuite">robosuite</a> which is powered by <a href="http://mujoco.org/">MuJoCo</a> for the robot control problems. In future iterations I will consider moving to use the bullet physics engine.  
 </p>
 <p>
-The original version of this repository was used as a submission for Stanford's course CS221 Autumn 2020. Subsequently this repository has been converted to be used for multiple different algorithm implementations:
+The original version of this repository was used as a submission for Stanford's CS221 class for Autumn 2020. Subsequently this repository has been extended to be used for multiple different algorithm implementations:
 
 - [x] REINFORCE
 - [x] Deep Deterministic Policy Gradient
