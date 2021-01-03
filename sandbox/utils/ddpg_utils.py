@@ -1,6 +1,4 @@
-# Utilities for both REINFORCE and DDPG Implementations
-# this file contains implementations made specifically for 
-# the robosuite environment.
+# Utilities for DDPG Implementations
 
 import os
 import random
@@ -9,9 +7,7 @@ import numpy as np
 import copy
 
 import torch
-from torch.autograd import Variable
 
-from robosuite.models.tasks import ManipulationTask, UniformRandomSampler
 
 class ReplayBuffer:
     '''
@@ -61,7 +57,7 @@ class OUActionNoise(object):
     Ornstein-Uhlenbeck process implementation sourced from:
     https://github.com/philtabor/Youtube-Code-Repository/blob/master/ReinforcementLearning/PolicyGradient/DDPG/pytorch/lunar-lander/ddpg_torch.py
     '''
-    def __init__(self, mu, sigma=0.15, theta=.2, dt=1e-2, x0=None):
+    def __init__(self, mu, sigma=0.15, theta=0.2, dt=1e-2, x0=None):
         self.theta = theta
         self.mu = mu
         self.sigma = sigma

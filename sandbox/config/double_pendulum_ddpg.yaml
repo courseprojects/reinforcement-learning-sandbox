@@ -4,7 +4,7 @@ environment:
 
 training_params:
   num_epochs: 100
-  num_episodes: 10
+  num_episodes: 100
   episode_horizon: 1000
   warmup: 100
   render: False

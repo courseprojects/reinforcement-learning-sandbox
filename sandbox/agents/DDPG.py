@@ -108,7 +108,7 @@ class DDPG:
         self.max_mem_size = max_mem_size
         self.memory = ReplayBuffer(max_mem_size)
 
-        self.random_process = OUActionNoise(mu=np.zeros(action_dim))   # Generate random noise centered around zero.
+        self.random_process = OUActionNoise(mu=np.zeros(action_dim), sigma=0.05 * self.action_high)   # Generate random noise centered around zero.
 
         self.tau = tau
         self.batch_size = batch_size

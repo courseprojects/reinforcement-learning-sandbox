@@ -3,7 +3,6 @@
 # For more on REINFORCE please consult Reinforcement Learning Richard S. Sutton &
 # Andrew G.Barto chapter 13
 
-import robosuite as suite
 import numpy as np
 import math
 
@@ -52,7 +51,7 @@ class REINFORCE:
     '''
     This class encapsulates functionality required to run the REINFORCE algorithm.
     '''
-    def __init__(self, state_dim,action_dim, gamma, lr, episodes, horizon, hidden_size):
+    def __init__(self, state_dim, action_dim, gamma, lr, episodes, horizon, hidden_size):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.hidden_size = hidden_size
@@ -60,7 +59,7 @@ class REINFORCE:
         self.model = REINFORCEPolicy(state_dim, action_dim,hidden_size)
         self.model = self.model.to(device)
         self.optimizer = optim.Adam(self.model.parameters(), lr = self.lr)
-        self.model.train()
+        self.model.train()  # Start model in training mode
         
         self.gamma = gamma
         self.episodes = episodes

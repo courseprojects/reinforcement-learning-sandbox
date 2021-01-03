@@ -91,7 +91,7 @@ if __name__=="__main__":
 	# Getting path variables
 	sandbox_path = str(Path(os.getcwd()).parent)
 	logging_path = sandbox_path + "/config/default_logger.conf"
-	config_path = sandbox_path + "/config/lift_ddpg.yaml" 
+	config_path = sandbox_path + "/config/double_pendulum_ddpg.yaml" 
 
 	# Set logging
 	log = set_logging(logging_path)
